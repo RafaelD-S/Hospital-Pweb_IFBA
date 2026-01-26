@@ -1,0 +1,58 @@
+@use "../../styles/variables.scss" as *;
+
+.select {
+  display: grid;
+  position: relative;
+
+  &__label {
+    font-size: 12px;
+    font-weight: 500;
+    color: $text-secondary;
+  }
+
+  &__field {
+    padding: 8px 0;
+    transition: border-bottom 200ms ease;
+    border-bottom: 1px solid $secondary;
+    cursor: pointer;
+
+    &__text {
+      color: $text-primary;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 18px;
+    }
+  }
+
+  &__dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    width: 100%;
+    background-color: $background-secondary;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow: auto;
+    z-index: 10;
+
+    &__item {
+      padding: 12px 12px;
+      font-size: 16px;
+      line-height: 20px;
+      color: $text-primary;
+      border: 1px solid $background;
+      border-bottom: 1px solid $background;
+      cursor: pointer;
+
+      &:hover:not(.select__dropdown__item--selected) {
+        border: 1px solid $background-secondary;
+        background-color: $background;
+      }
+
+      &--selected {
+        background-color: $accent;
+        color: $background;
+      }
+    }
+  }
+}

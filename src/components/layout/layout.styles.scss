@@ -1,0 +1,10 @@
+.layout {
+  width: 612px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 100vh;
+  margin: auto;
+  padding: 48px 0;
+  overflow: auto;
+}

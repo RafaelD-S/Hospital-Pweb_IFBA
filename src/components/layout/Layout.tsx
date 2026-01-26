@@ -1,0 +1,39 @@
+import { useNavigate } from "react-router-dom";
+import Tab from "../tab/Tab";
+import type { ITabItem } from "../tab/tab.interface";
+import "./layout.styles.scss";
+
+const Layout = ({ children }: { children?: React.ReactNode }) => {
+  const navigate = useNavigate();
+
+  const tabItems = [
+    {
+      label: "Médicos",
+      value: "medicos",
+      active: true,
+    },
+    {
+      label: "Pacientes",
+      value: "pacientes",
+      active: false,
+    },
+    {
+      label: "Consultas",
+      value: "consultas",
+      active: false,
+    },
+  ];
+
+  const handleTabClick = (item: ITabItem) => {
+    navigate(`/${item.value.toLowerCase()}`);
+  };
+
+  return (
+    <div className="layout">
+      <Tab items={tabItems} onClick={handleTabClick} />
+      {children}
+    </div>
+  );
+};
+
+export default Layout;

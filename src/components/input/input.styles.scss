@@ -1,0 +1,33 @@
+@use "../../styles/variables.scss" as *;
+
+.input {
+  display: grid;
+
+  &__label {
+    font-size: 12px;
+    font-weight: 500;
+    color: $text-secondary;
+  }
+
+  &__field {
+    background-color: transparent;
+    border: none;
+    color: $text-primary;
+    padding: 8px 0;
+    font-size: 16px;
+    line-height: 18px;
+    color: $text-primary;
+    transition: border-bottom 200ms ease;
+    border-bottom: 1px solid $secondary;
+
+    &::placeholder {
+      color: $text-primary;
+      opacity: 0.3;
+    }
+
+    &:focus {
+      outline: none;
+      border-bottom: 1px solid $accent;
+    }
+  }
+}

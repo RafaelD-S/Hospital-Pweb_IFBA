@@ -1,0 +1,27 @@
+@use "../../styles/variables.scss" as *;
+
+.tab {
+  width: 100%;
+  display: flex;
+
+  &__item {
+    width: 100%;
+    font-size: 16px;
+    line-height: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 12px 24px;
+    border-bottom: 2px solid $secondary;
+    transition: background-color 0.125s ease;
+    color: $text-secondary;
+
+    &:hover {
+      background-color: $background-secondary;
+    }
+
+    &--active {
+      color: $text-primary;
+      border-bottom: 2px solid $accent;
+    }
+  }
+}
