@@ -1,0 +1,59 @@
+import type { IListItem } from "../components/list/models/list.interface";
+
+export type IPacientMock = IListItem & {
+  email: string;
+  telefone: string;
+  cpf: string;
+  logradouro: string;
+  numero: string;
+  complemento: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  cep: string;
+};
+
+export const pacientMock: IPacientMock[] = [
+  {
+    title: "Ana Costa",
+    email: "ana.costa@email.com",
+    telefone: "(11) 95555-4444",
+    cpf: "123.456.789-00",
+    logradouro: "Rua das Flores",
+    numero: "200",
+    complemento: "Bloco B, Apto 34",
+    bairro: "Jardins",
+    cidade: "São Paulo",
+    estado: "SP",
+    cep: "01410-000",
+    disabled: false,
+  },
+  {
+    title: "Bruno Lima",
+    email: "bruno.lima@email.com",
+    telefone: "(21) 94444-5555",
+    cpf: "987.654.321-00",
+    logradouro: "Rua do Catete",
+    numero: "780",
+    complemento: "Casa",
+    bairro: "Catete",
+    cidade: "Rio de Janeiro",
+    estado: "RJ",
+    cep: "22220-000",
+    disabled: false,
+  },
+  {
+    title: "Carla Mendes",
+    email: "carla.mendes@email.com",
+    telefone: "(31) 93333-6666",
+    cpf: "111.222.333-44",
+    logradouro: "Av. Afonso Pena",
+    numero: "1500",
+    complemento: "Sala 1201",
+    bairro: "Funcionários",
+    cidade: "Belo Horizonte",
+    estado: "MG",
+    cep: "30130-003",
+    disabled: true,
+  },
+];

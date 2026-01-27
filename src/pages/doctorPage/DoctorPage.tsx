@@ -4,77 +4,42 @@ import List from "../../components/list/List";
 import type { IListItem } from "../../components/list/models/list.interface";
 import Modal from "../../components/modal/Modal";
 import Select from "../../components/select/select";
-
-type Doctor = IListItem & {
-  email: string;
-  telefone: string;
-  crm: string;
-  logradouro: string;
-  numero: string;
-  complemento: string;
-  bairro: string;
-  cidade: string;
-  estado: string;
-  cep: string;
-};
+import { doctorsMock, type IDoctorMock } from "../../mocks/doctor.mock";
+import Button from "../../components/button/Button";
 
 const DoctorPage = () => {
-  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
+  const [doctors, setDoctors] = useState<IDoctorMock[]>(doctorsMock);
+  const [selectedDoctor, setSelectedDoctor] = useState<IDoctorMock | null>(
+    null,
+  );
 
-  const doctorsMock: Doctor[] = [
-    {
-      title: "Dr. João Silva",
-      description: "Cardiologista",
-      email: "joao.silva@hospital.com",
-      telefone: "(11) 98888-1111",
-      crm: "CRM-SP 123456",
-      logradouro: "Rua das Palmeiras",
-      numero: "100",
-      complemento: "Apto 12",
-      bairro: "Centro",
-      cidade: "São Paulo",
-      estado: "SP",
-      cep: "01000-000",
-      disabled: false,
-    },
-    {
-      title: "Dra. Maria Oliveira",
-      description: "Dermatologista",
-      email: "maria.oliveira@hospital.com",
-      telefone: "(21) 97777-2222",
-      crm: "CRM-RJ 654321",
-      logradouro: "Av. Atlântica",
-      numero: "2500",
-      complemento: "Sala 305",
-      bairro: "Copacabana",
-      cidade: "Rio de Janeiro",
-      estado: "RJ",
-      cep: "22070-000",
-      disabled: false,
-    },
-    {
-      title: "Dr. Pedro Santos",
-      description: "Ortopedista",
-      email: "pedro.santos@hospital.com",
-      telefone: "(31) 96666-3333",
-      crm: "CRM-MG 112233",
-      logradouro: "Rua das Acácias",
-      numero: "45",
-      complemento: "Casa",
-      bairro: "Savassi",
-      cidade: "Belo Horizonte",
-      estado: "MG",
-      cep: "30140-000",
-      disabled: true,
-    },
-  ];
+  const handleRemoveDoctor = (item: IListItem) => {
+    setDoctors((prev) =>
+      prev.map((d) => (d.title === item.title ? { ...d, disabled: true } : d)),
+    );
+  };
+
+  const handleRestoreDoctor = (item: IListItem) => {
+    setDoctors((prev) =>
+      prev.map((d) => (d.title === item.title ? { ...d, disabled: false } : d)),
+    );
+  };
+
+  const handleRegisterDoctor = () => {
+    setSelectedDoctor({} as IDoctorMock);
+  };
 
   return (
     <div className="doctor-page">
       <List
-        items={doctorsMock}
+        items={doctors}
         registrationTitle="Cadastrar Médico"
-        onEditClick={(item) => setSelectedDoctor(item)}
+        onEditClick={(item) =>
+          setSelectedDoctor(doctors.find((d) => d.title === item.title) ?? null)
+        }
+        onRemoveClick={handleRemoveDoctor}
+        onRestoreClick={handleRestoreDoctor}
+        onRegistrationClick={handleRegisterDoctor}
       />
 
       {selectedDoctor && (
@@ -173,9 +138,9 @@ const DoctorPage = () => {
             ]}
           />
 
-          <Modal.Button onClick={() => setSelectedDoctor(null)}>
+          <Button type="submit" onClick={() => setSelectedDoctor(null)}>
             Salvar
-          </Modal.Button>
+          </Button>
         </Modal>
       )}
     </div>
