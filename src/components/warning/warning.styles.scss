@@ -1,0 +1,30 @@
+@use "../../styles/variables.scss" as *;
+
+.warning {
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  inset: 0;
+
+  &__message {
+    color: $text-primary;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+
+  &__container {
+    background-color: $background;
+    min-width: 200px;
+    max-width: 300px;
+    padding: 32px 24px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+  }
+}
