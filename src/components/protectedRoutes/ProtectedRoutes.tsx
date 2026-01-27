@@ -11,6 +11,8 @@ const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (!token) {
       navigate("/login", { replace: true, state: { from: location.pathname } });
+    } else if (location.pathname === "/") {
+      navigate("/medicos", { replace: true });
     }
   }, [token, navigate, location]);
 

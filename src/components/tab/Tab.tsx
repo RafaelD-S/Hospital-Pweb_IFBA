@@ -23,7 +23,7 @@ const Tab = ({ items = [], onClick = () => {} }: ITab) => {
 
   useEffect(() => {
     setCurrentActive(location.pathname.substring(1));
-  }, []);
+  }, [location]);
 
   return (
     <nav className="tab">
