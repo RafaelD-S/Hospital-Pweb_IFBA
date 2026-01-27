@@ -26,24 +26,6 @@
     color: $text-primary;
   }
 
-  &__button {
-    background-color: $accent;
-    text-align: center;
-    color: $background-secondary;
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 20px;
-    border: none;
-    padding: 6px 24px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: opacity 200ms ease;
-
-    &:hover {
-      opacity: 0.8;
-    }
-  }
-
   &__inputs {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

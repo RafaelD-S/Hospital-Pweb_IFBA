@@ -1,10 +1,10 @@
 import { Children, isValidElement } from "react";
 import ModalTitle from "./views/Modal-Title";
-import ModalButton from "./views/Modal-Button";
 import "./modal.styles.scss";
 import Input from "../input/Input";
 import Select from "../select/select";
 import type { ModalComposition } from "./models/modal.type";
+import Button from "../button/Button";
 
 export const Modal: ModalComposition = ({
   children,
@@ -17,8 +17,8 @@ export const Modal: ModalComposition = ({
     (child) => isValidElement(child) && child.type === ModalTitle,
   );
 
-  const Button = childrenArray.find(
-    (child) => isValidElement(child) && child.type === ModalButton,
+  const ButtonComponent = childrenArray.find(
+    (child) => isValidElement(child) && child.type === Button,
   );
 
   const Inputs = childrenArray.filter(
@@ -37,13 +37,12 @@ export const Modal: ModalComposition = ({
         <div className="modal__inputs">
           {Inputs} {Selects}
         </div>
-        {Button}
+        {ButtonComponent}
       </form>
     </div>
   );
 };
 
 Modal.Title = ModalTitle;
-Modal.Button = ModalButton;
 
 export default Modal;
