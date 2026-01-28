@@ -5,13 +5,16 @@ import "./select.styles.scss";
 const Select = ({
   label,
   options,
-  value = null,
   placeholder = "Selecione...",
   disabled = false,
   onChange,
 }: ISelect) => {
   const [isOpen, setIsOpen] = useState(false);
   const [optionsState, setOptionsState] = useState(options);
+
+  useEffect(() => {
+    setOptionsState(options);
+  }, [options]);
 
   const selectedItem = optionsState.find((opt) => opt.selected);
 
@@ -33,7 +36,7 @@ const Select = ({
   };
 
   return (
-    <div className="select">
+    <div className={"select" + (disabled ? " select--disabled" : "")}>
       <label className="select__label" htmlFor={`select-component-${label}`}>
         {label}
       </label>

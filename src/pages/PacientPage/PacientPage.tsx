@@ -44,7 +44,11 @@ const PacientPage = () => {
       />
 
       {selectedPacient && (
-        <Modal isOpen={true} onClickOutside={() => setSelectedPacient(null)}>
+        <Modal
+          isOpen={true}
+          onClickOutside={() => setSelectedPacient(null)}
+          onSubmit={() => setSelectedPacient(null)}
+        >
           <Modal.Title>Editar Paciente</Modal.Title>
 
           <Input
@@ -112,7 +116,7 @@ const PacientPage = () => {
             defaultValue={selectedPacient.cep}
           />
 
-          <Button onClick={() => setSelectedPacient(null)}>Salvar</Button>
+          <Button type="submit">Salvar</Button>
         </Modal>
       )}
     </div>

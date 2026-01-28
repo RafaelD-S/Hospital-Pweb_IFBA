@@ -4,6 +4,7 @@ export type ModalProps = {
   children: React.ReactNode;
   isOpen?: boolean;
   onClickOutside?: () => void;
+  onSubmit?: React.FormEventHandler<HTMLFormElement>;
 };
 
 export type ModalComposition = React.FC<ModalProps> & {

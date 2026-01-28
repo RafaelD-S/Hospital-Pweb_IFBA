@@ -20,6 +20,12 @@
     transition: border-bottom 200ms ease;
     border-bottom: 1px solid $secondary;
 
+    &[disabled] {
+      opacity: 0.3;
+      border-bottom: 1px solid $disabled;
+      cursor: not-allowed;
+    }
+
     &::placeholder {
       color: $text-primary;
       opacity: 0.3;

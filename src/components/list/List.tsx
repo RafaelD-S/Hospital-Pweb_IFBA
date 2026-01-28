@@ -5,6 +5,7 @@ import ListItem from "./views/listItem";
 const List = ({
   items = [],
   registrationTitle = "Registrar",
+  hasEditButton = true,
   onRegistrationClick = () => {},
   onEditClick = () => {},
   onRestoreClick = () => {},
@@ -22,6 +23,7 @@ const List = ({
         <ListItem
           {...item}
           key={index}
+          hasEditButton={hasEditButton}
           onEditClick={() => onEditClick(item)}
           onRemoveClick={() => onRemoveClick(item)}
           onRestoreClick={() => onRestoreClick(item)}

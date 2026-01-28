@@ -43,7 +43,11 @@ const DoctorPage = () => {
       />
 
       {selectedDoctor && (
-        <Modal isOpen={true} onClickOutside={() => setSelectedDoctor(null)}>
+        <Modal
+          isOpen={true}
+          onClickOutside={() => setSelectedDoctor(null)}
+          onSubmit={() => setSelectedDoctor(null)}
+        >
           <Modal.Title>Editar Médico</Modal.Title>
 
           <Input
@@ -138,9 +142,7 @@ const DoctorPage = () => {
             ]}
           />
 
-          <Button type="submit" onClick={() => setSelectedDoctor(null)}>
-            Salvar
-          </Button>
+          <Button type="submit">Salvar</Button>
         </Modal>
       )}
     </div>

@@ -10,6 +10,7 @@ export const Modal: ModalComposition = ({
   children,
   isOpen = true,
   onClickOutside = () => {},
+  onSubmit,
 }) => {
   const childrenArray = Children.toArray(children);
 
@@ -32,7 +33,14 @@ export const Modal: ModalComposition = ({
   if (!isOpen) return null;
   return (
     <div className="modal" onClick={onClickOutside}>
-      <form className="modal__container" onClick={(e) => e.stopPropagation()}>
+      <form
+        className="modal__container"
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit?.(e);
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal__title">{Title}</div>
         <div className="modal__inputs">
           {Inputs} {Selects}

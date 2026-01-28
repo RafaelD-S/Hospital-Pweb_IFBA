@@ -3,14 +3,16 @@ import EditIcon from "../../../assets/edit.svg";
 import RemoveIcon from "../../../assets/remove.svg";
 import AddIcon from "../../../assets/add.svg";
 import RestoreIcon from "../../../assets/restore.svg";
+import { useEffect } from "react";
 
 const ListItem = ({
   title,
   description,
   type = "item",
   disabled = false,
-  onClick = () => {},
+  hasEditButton = true,
   onEditClick = () => {},
+  onClick = () => {},
   onRemoveClick = () => {},
   onRestoreClick = () => {},
 }: IListItemProps) => {
@@ -39,7 +41,9 @@ const ListItem = ({
       <div className="list__item__actions">
         {!disabled ? (
           <>
-            <img src={EditIcon} alt="edit icon" onClick={onEditClick} />
+            {hasEditButton && (
+              <img src={EditIcon} alt="edit icon" onClick={onEditClick} />
+            )}
             <img src={RemoveIcon} alt="remove icon" onClick={onRemoveClick} />
           </>
         ) : (
