@@ -1,4 +1,5 @@
 @use "../../styles/variables.scss" as *;
+@use "../../styles/mixins.scss" as *;
 
 .modal {
   position: absolute;
@@ -16,6 +17,7 @@
     border-radius: 4px;
     display: grid;
     gap: 24px;
+    @include containerAppear(modalAppear);
   }
 
   &__title {

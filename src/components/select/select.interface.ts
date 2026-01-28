@@ -10,5 +10,5 @@ export interface ISelect {
   value?: string | null;
   placeholder?: string;
   disabled?: boolean;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
 }

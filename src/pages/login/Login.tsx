@@ -4,37 +4,74 @@ import Input from "../../components/input/Input";
 
 import "./login.styles.scss";
 import { useAuth } from "../../hooks/useAuth";
+import AuthForm from "../../components/authForm/AuthForm";
+import { useState } from "react";
+import Warning from "../../components/warning/Warning";
 
 const Login = () => {
   const { token } = useAuth();
   const navigate = useNavigate();
+  const [nome, setNome] = useState("");
+  const [senha, setSenha] = useState("");
+  const [warningMessage, setWarningMessage] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (token) navigate("/medicos");
+
+    if (!token) setWarningMessage("Nome ou senha inválidos");
+    else if (token) navigate("/medicos");
+    else if (nome.trim() === "" || senha.trim() === "")
+      setWarningMessage("Preencha todos os campos");
+    else setWarningMessage("");
+  };
+
+  const handleRegisterClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    navigate("/register");
   };
 
   return (
-    <main className="login">
-      <div className="login__container">
-        <h1 className="login__title">Faça o Login</h1>
-        <form action="" className="login__form">
-          <div className="login__form__inputs">
-            <Input label="Nome" placeholder="Digite seu nome" type="email" />
+    <AuthForm title="Faça o Login">
+      <div className="login__form__inputs">
+        <Input
+          label="Nome"
+          placeholder="Digite seu nome"
+          type="email"
+          value={nome}
+          onChange={(e) => setNome(e.target.value)}
+        />
+        <Input
+          label="Senha"
+          type="password"
+          placeholder="Digite sua senha"
+          value={senha}
+          onChange={(e) => setSenha(e.target.value)}
+        />
 
-            <Input
-              label="Senha"
-              type="password"
-              placeholder="Digite sua senha"
-            />
-          </div>
-
-          <Button type="submit" onClick={handleSubmit}>
-            Login
-          </Button>
-        </form>
+        <p className="login__form__register">
+          Não possui uma conta?{" "}
+          <a
+            className="login__form__register__link"
+            href="/register"
+            onClick={handleRegisterClick}
+          >
+            Registre-se
+          </a>
+        </p>
       </div>
-    </main>
+
+      <Button type="submit" onClick={handleSubmit}>
+        Login
+      </Button>
+
+      {warningMessage && (
+        <Warning
+          message={warningMessage}
+          action="Fechar"
+          onActionClick={() => setWarningMessage("")}
+        />
+      )}
+    </AuthForm>
   );
 };
 

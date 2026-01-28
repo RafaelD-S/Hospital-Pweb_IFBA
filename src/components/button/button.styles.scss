@@ -19,6 +19,15 @@
     background-color: #ff3e25;
   }
 
+  &[disabled] {
+    opacity: 0.4;
+    cursor: not-allowed;
+
+    &:hover {
+      opacity: 0.4;
+    }
+  }
+
   &:hover {
     opacity: 0.8;
   }

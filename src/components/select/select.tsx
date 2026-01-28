@@ -7,7 +7,7 @@ const Select = ({
   options,
   placeholder = "Selecione...",
   disabled = false,
-  onChange,
+  onChange = () => {},
 }: ISelect) => {
   const [isOpen, setIsOpen] = useState(false);
   const [optionsState, setOptionsState] = useState(options);
