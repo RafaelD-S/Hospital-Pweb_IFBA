@@ -2,7 +2,7 @@
 @use "../../styles/mixins.scss" as *;
 
 .modal {
-  position: absolute;
+  position: fixed;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -16,7 +16,7 @@
     padding: 24px;
     border-radius: 4px;
     display: grid;
-    gap: 24px;
+    gap: 16px;
     @include containerAppear(modalAppear);
   }
 
@@ -28,7 +28,16 @@
     color: $text-primary;
   }
 
-  &__inputs {
+  &__paragraph {
+    font-size: 16px;
+    text-align: center;
+    font-weight: 400;
+    line-height: 24px;
+    color: $text-secondary;
+  }
+
+  &__inputs,
+  &__buttons {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;

@@ -5,7 +5,8 @@ import PacientPage from "../pages/PacientPage/PacientPage";
 import ProtectedRoutes from "../components/protectedRoutes/ProtectedRoutes";
 import Login from "../pages/login/Login";
 import Warning from "../components/warning/Warning";
-import Register from "../pages/register/Register";
+import RegisterDoctor from "../pages/registerDoctor/RegisterDoctor";
+import RegisterPacient from "../pages/registerPacient/RegisterPacient";
 
 const AppRouter = () => {
   const navigate = useNavigate();
@@ -13,7 +14,8 @@ const AppRouter = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route path="/register/pacient" element={<RegisterPacient />} />
+      <Route path="/register/doctor" element={<RegisterDoctor />} />
       <Route
         path="*"
         element={

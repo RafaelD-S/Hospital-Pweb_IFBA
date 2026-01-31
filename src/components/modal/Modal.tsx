@@ -5,6 +5,7 @@ import Input from "../input/Input";
 import Select from "../select/select";
 import type { ModalComposition } from "./models/modal.type";
 import Button from "../button/Button";
+import ModalParagraph from "./views/Modal-Paragraph";
 
 export const Modal: ModalComposition = ({
   children,
@@ -18,7 +19,11 @@ export const Modal: ModalComposition = ({
     (child) => isValidElement(child) && child.type === ModalTitle,
   );
 
-  const ButtonComponent = childrenArray.find(
+  const Paragraph = childrenArray.find(
+    (child) => isValidElement(child) && child.type === ModalParagraph,
+  );
+
+  const ButtonsComponent = childrenArray.filter(
     (child) => isValidElement(child) && child.type === Button,
   );
 
@@ -42,15 +47,17 @@ export const Modal: ModalComposition = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal__title">{Title}</div>
+        {Paragraph}
         <div className="modal__inputs">
           {Inputs} {Selects}
         </div>
-        {ButtonComponent}
+        <div className="modal__buttons">{ButtonsComponent}</div>
       </form>
     </div>
   );
 };
 
 Modal.Title = ModalTitle;
+Modal.Paragraph = ModalParagraph;
 
 export default Modal;

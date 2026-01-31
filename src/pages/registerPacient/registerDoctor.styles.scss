@@ -1,0 +1,13 @@
+.register {
+  &__form {
+    &__inputs {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+
+      & > :last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+      }
+    }
+  }
+}

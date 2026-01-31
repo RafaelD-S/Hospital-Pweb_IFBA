@@ -58,7 +58,6 @@ const AppointmentPage = () => {
   const [selectedPacient, setSelectedPacient] = useState<string>("");
   const [selectedDoctor, setSelectedDoctor] = useState<string>("");
 
-  // Local today string in YYYY-MM-DD for date input constraints
   const todayStr = new Date().toLocaleDateString("en-CA");
 
   const [warning, setWarning] = useState<string | null>(null);
