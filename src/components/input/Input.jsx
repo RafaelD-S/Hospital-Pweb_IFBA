@@ -1,7 +1,6 @@
-import type { IInput } from "./input.interface";
 import "./input.styles.scss";
 
-const Input = ({ label, ...rest }: IInput) => {
+const Input = ({ label, ...rest }) => {
   return (
     <div className="input">
       <label className="input__label" htmlFor={`input-component-${label}`}>

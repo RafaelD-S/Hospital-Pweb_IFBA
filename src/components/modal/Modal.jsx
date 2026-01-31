@@ -3,11 +3,10 @@ import ModalTitle from "./views/Modal-Title";
 import "./modal.styles.scss";
 import Input from "../input/Input";
 import Select from "../select/select";
-import type { ModalComposition } from "./models/modal.type";
 import Button from "../button/Button";
 import ModalParagraph from "./views/Modal-Paragraph";
 
-export const Modal: ModalComposition = ({
+export const Modal = ({
   children,
   isOpen = true,
   onClickOutside = () => {},

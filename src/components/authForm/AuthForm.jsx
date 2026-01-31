@@ -1,7 +1,6 @@
-import type { IAuthForm } from "./authForm.interface";
 import "./authForm.styles.scss";
 
-const AuthForm = ({ title, children }: IAuthForm) => {
+const AuthForm = ({ title, children }) => {
   return (
     <main className="authForm">
       <div className="authForm__container">

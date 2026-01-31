@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import Layout from "../layout/Layout";
 
-const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
+const ProtectedRoutes = ({ children }) => {
   const { token } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();

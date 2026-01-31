@@ -1,4 +1,3 @@
-import type { IList } from "./models/list.interface";
 import "./list.styles.scss";
 import ListItem from "./views/listItem";
 
@@ -10,7 +9,7 @@ const List = ({
   onEditClick = () => {},
   onRestoreClick = () => {},
   onRemoveClick = () => {},
-}: IList) => {
+}) => {
   return (
     <div className="list">
       <ListItem

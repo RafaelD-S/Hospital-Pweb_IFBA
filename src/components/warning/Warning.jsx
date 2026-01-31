@@ -1,9 +1,8 @@
 import Button from "../button/Button";
-import type { IWarning } from "./warning.interface";
 import "./warning.styles.scss";
 import ErrorIcon from "../../assets/error.svg";
 
-const Warning = ({ message, action, onActionClick = () => {} }: IWarning) => {
+const Warning = ({ message, action, onActionClick = () => {} }) => {
   return (
     <div className="warning">
       <div className="warning__container">

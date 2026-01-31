@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
-import type { ITab, ITabItem } from "./tab.interface";
 import "./tab.styles.scss";
 import { useLocation } from "react-router-dom";
 
-const Tab = ({ items = [], onClick = () => {} }: ITab) => {
+const Tab = ({ items = [], onClick = () => {} }) => {
   const location = useLocation();
   const [itemsState, setItemsState] = useState(items);
 
-  const setCurrentActive = (value: string) => {
+  const setCurrentActive = (value) => {
     setItemsState((prevItems) =>
       prevItems.map((item) => ({
         ...item,
@@ -16,7 +15,7 @@ const Tab = ({ items = [], onClick = () => {} }: ITab) => {
     );
   };
 
-  const handleClick = (itemClicked: ITabItem) => {
+  const handleClick = (itemClicked) => {
     setCurrentActive(itemClicked.value);
     onClick(itemClicked);
   };

@@ -1,19 +1,4 @@
-import type { IListItem } from "../components/list/models/list.interface";
-
-export type IDoctorMock = IListItem & {
-  email: string;
-  telefone: string;
-  crm: string;
-  logradouro: string;
-  numero: string;
-  complemento: string;
-  bairro: string;
-  cidade: string;
-  estado: string;
-  cep: string;
-};
-
-export const doctorsMock: IDoctorMock[] = [
+export const doctorsMock = [
   {
     title: "Dr. João Silva",
     description: "Cardiologista",

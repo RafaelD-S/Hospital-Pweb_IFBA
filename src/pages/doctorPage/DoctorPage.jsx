@@ -1,32 +1,29 @@
 import { useState } from "react";
 import Input from "../../components/input/Input";
 import List from "../../components/list/List";
-import type { IListItem } from "../../components/list/models/list.interface";
 import Modal from "../../components/modal/Modal";
 import Select from "../../components/select/select";
-import { doctorsMock, type IDoctorMock } from "../../mocks/doctor.mock";
+import { doctorsMock } from "../../mocks/doctor.mock";
 import Button from "../../components/button/Button";
 
 const DoctorPage = () => {
-  const [doctors, setDoctors] = useState<IDoctorMock[]>(doctorsMock);
-  const [selectedDoctor, setSelectedDoctor] = useState<IDoctorMock | null>(
-    null,
-  );
+  const [doctors, setDoctors] = useState(doctorsMock);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
 
-  const handleRemoveDoctor = (item: IListItem) => {
+  const handleRemoveDoctor = (item) => {
     setDoctors((prev) =>
       prev.map((d) => (d.title === item.title ? { ...d, disabled: true } : d)),
     );
   };
 
-  const handleRestoreDoctor = (item: IListItem) => {
+  const handleRestoreDoctor = (item) => {
     setDoctors((prev) =>
       prev.map((d) => (d.title === item.title ? { ...d, disabled: false } : d)),
     );
   };
 
   const handleRegisterDoctor = () => {
-    setSelectedDoctor({} as IDoctorMock);
+    setSelectedDoctor({});
   };
 
   return (

@@ -1,4 +1,4 @@
-const ModalParagraph = ({ children }: { children: React.ReactNode }) => {
+const ModalParagraph = ({ children }) => {
   return <p className="modal__paragraph">{children}</p>;
 };
 

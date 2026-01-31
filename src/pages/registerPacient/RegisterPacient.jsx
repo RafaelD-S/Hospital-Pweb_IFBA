@@ -2,40 +2,18 @@ import { useState } from "react";
 import AuthForm from "../../components/authForm/AuthForm";
 import Button from "../../components/button/Button";
 import Input from "../../components/input/Input";
-import type { ISelectOption } from "../../components/select/select.interface";
 import "./registerDoctor.styles.scss";
-import Select from "../../components/select/select";
 import Warning from "../../components/warning/Warning";
 import Modal from "../../components/modal/Modal";
 import { useNavigate } from "react-router-dom";
 
-const specialtyOptions: ISelectOption[] = [
-  {
-    label: "Ortopedia",
-    value: "0",
-  },
-  {
-    label: "Cardiologia",
-    value: "1",
-  },
-  {
-    label: "Ginecologia",
-    value: "2",
-  },
-  {
-    label: "Dermatologia",
-    value: "3",
-  },
-];
-
-const RegisterDoctor = () => {
+const RegisterPacient = () => {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [specialty, setSpecialty] = useState("");
-  const [crm, setCrm] = useState("");
+  const [cpf, setCpf] = useState("");
   const [logradouro, setLogradouro] = useState("");
   const [numero, setNumero] = useState("");
   const [complemento, setComplemento] = useState("");
@@ -46,15 +24,14 @@ const RegisterDoctor = () => {
   const [warningMessage, setWarningMessage] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const formSubmit = (e: React.FormEvent) => {
+  const formSubmit = (e) => {
     e.preventDefault();
     const registerData = {
       name,
       email,
       phone,
       password,
-      specialty,
-      crm,
+      cpf,
       logradouro,
       numero,
       complemento,
@@ -95,17 +72,12 @@ const RegisterDoctor = () => {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
-          <Select
-            label="Especialidade"
-            onChange={(item) => setSpecialty(item)}
-            options={specialtyOptions}
-          />
           <Input
-            label="CRM"
-            placeholder="Digite o CRM"
+            label="CPF"
+            placeholder="Digite o CPF"
             type="text"
-            value={crm}
-            onChange={(e) => setCrm(e.target.value)}
+            value={cpf}
+            onChange={(e) => setCpf(e.target.value)}
           />
           <Input
             label="CEP"
@@ -189,4 +161,4 @@ const RegisterDoctor = () => {
   );
 };
 
-export default RegisterDoctor;
+export default RegisterPacient;

@@ -5,38 +5,28 @@ import Input from "../../components/input/Input";
 import Select from "../../components/select/select";
 import Warning from "../../components/warning/Warning";
 import Button from "../../components/button/Button";
-import type { IListItem } from "../../components/list/models/list.interface";
 import { doctorsMock } from "../../mocks/doctor.mock";
 import { pacientMock } from "../../mocks/pacient.mock";
 
-type Appointment = {
-  id: string;
-  pacient: string; // pacient title
-  doctor: string; // doctor title
-  date: string; // YYYY-MM-DD
-  hour: string; // HH:MM
-};
+const toDateTime = (date, hour) => new Date(`${date}T${hour}:00`);
 
-const toDateTime = (date: string, hour: string) =>
-  new Date(`${date}T${hour}:00`);
-
-const isSunday = (dateStr: string) => {
+const isSunday = (dateStr) => {
   const d = new Date(`${dateStr}T00:00:00`);
   return d.getDay() === 0;
 };
 
-const withinBusinessHours = (hour: string) => {
+const withinBusinessHours = (hour) => {
   const h = parseInt(hour.split(":")[0], 10);
   return h >= 7 && h <= 18;
 };
 
-const formatDateBR = (dateStr: string) => {
+const formatDateBR = (dateStr) => {
   const d = new Date(`${dateStr}T00:00:00`);
   return d.toLocaleDateString();
 };
 
-const businessHoursOptions = (dateStr?: string) => {
-  const opts: { label: string; value: string }[] = [];
+const businessHoursOptions = (dateStr) => {
+  const opts = [];
   for (let h = 7; h <= 18; h++) {
     const label = `${String(h).padStart(2, "0")}:00`;
     if (dateStr) {
@@ -50,21 +40,20 @@ const businessHoursOptions = (dateStr?: string) => {
 };
 
 const AppointmentPage = () => {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [appointments, setAppointments] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
 
-  const [selectedDate, setSelectedDate] = useState<string>("");
-  const [selectedHour, setSelectedHour] = useState<string>("");
-  const [selectedPacient, setSelectedPacient] = useState<string>("");
-  const [selectedDoctor, setSelectedDoctor] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedHour, setSelectedHour] = useState("");
+  const [selectedPacient, setSelectedPacient] = useState("");
+  const [selectedDoctor, setSelectedDoctor] = useState("");
 
   const todayStr = new Date().toLocaleDateString("en-CA");
 
-  const [warning, setWarning] = useState<string | null>(null);
+  const [warning, setWarning] = useState(null);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
-  const [cancelReason, setCancelReason] = useState<string>("");
-  const [cancelAppointment, setCancelAppointment] =
-    useState<Appointment | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelAppointment, setCancelAppointment] = useState(null);
 
   const activePacients = useMemo(
     () => pacientMock.filter((p) => !p.disabled),
@@ -116,7 +105,7 @@ const AppointmentPage = () => {
       .map((d) => ({ label: d.title ?? "", value: d.title ?? "" }));
   }, [activeDoctors, appointments, selectedDate, selectedHour]);
 
-  const listItems: IListItem[] = useMemo(
+  const listItems = useMemo(
     () =>
       appointments.map((a) => ({
         ...a,
@@ -143,7 +132,7 @@ const AppointmentPage = () => {
     setWarning(null);
   };
 
-  const validateAndSubmit: React.FormEventHandler<HTMLFormElement> = () => {
+  const validateAndSubmit = () => {
     if (!selectedDate) {
       setWarning("Selecione a data da consulta.");
       return;
@@ -247,7 +236,7 @@ const AppointmentPage = () => {
             defaultValue={selectedDate}
             min={todayStr}
             onChange={(e) => {
-              const v = (e.target as HTMLInputElement).value;
+              const v = e.target.value;
               setSelectedDate(v);
               setSelectedHour("");
             }}

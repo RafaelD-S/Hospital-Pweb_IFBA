@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import type { ISelect } from "./select.interface";
 import "./select.styles.scss";
 
 const Select = ({
@@ -8,7 +7,7 @@ const Select = ({
   placeholder = "Selecione...",
   disabled = false,
   onChange = () => {},
-}: ISelect) => {
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [optionsState, setOptionsState] = useState(options);
 
@@ -23,7 +22,7 @@ const Select = ({
     setIsOpen((o) => !o);
   };
 
-  const handleOptionClick = (optionValue: string) => {
+  const handleOptionClick = (optionValue) => {
     onChange(optionValue);
     setOptionsState((prevOptions) =>
       prevOptions.map((opt) => ({

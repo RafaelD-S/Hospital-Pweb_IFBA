@@ -17,7 +17,7 @@ const Login = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [warningMessage, setWarningMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!token) setWarningMessage("Nome ou senha inválidos");
@@ -27,7 +27,7 @@ const Login = () => {
     else setWarningMessage("");
   };
 
-  const handleRegisterClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleRegisterClick = (e) => {
     e.preventDefault();
     setIsModalOpen(true);
   };

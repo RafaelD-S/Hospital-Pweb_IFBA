@@ -2,30 +2,27 @@ import { useState } from "react";
 import List from "../../components/list/List";
 import Input from "../../components/input/Input";
 import Modal from "../../components/modal/Modal";
-import type { IListItem } from "../../components/list/models/list.interface";
-import { pacientMock, type IPacientMock } from "../../mocks/pacient.mock";
+import { pacientMock } from "../../mocks/pacient.mock";
 import Button from "../../components/button/Button";
 
 const PacientPage = () => {
-  const [pacients, setPacients] = useState<IPacientMock[]>(pacientMock);
-  const [selectedPacient, setSelectedPacient] = useState<IPacientMock | null>(
-    null,
-  );
+  const [pacients, setPacients] = useState(pacientMock);
+  const [selectedPacient, setSelectedPacient] = useState(null);
 
-  const handleRemovePacient = (item: IListItem) => {
+  const handleRemovePacient = (item) => {
     setPacients((prev) =>
       prev.map((p) => (p.title === item.title ? { ...p, disabled: true } : p)),
     );
   };
 
-  const handleRestorePacient = (item: IListItem) => {
+  const handleRestorePacient = (item) => {
     setPacients((prev) =>
       prev.map((p) => (p.title === item.title ? { ...p, disabled: false } : p)),
     );
   };
 
   const handleRegisterPacient = () => {
-    setSelectedPacient({} as IPacientMock);
+    setSelectedPacient({});
   };
 
   return (

@@ -1,9 +1,7 @@
-import type { IListItemProps } from "../models/list.interface";
 import EditIcon from "../../../assets/edit.svg";
 import RemoveIcon from "../../../assets/remove.svg";
 import AddIcon from "../../../assets/add.svg";
 import RestoreIcon from "../../../assets/restore.svg";
-import { useEffect } from "react";
 
 const ListItem = ({
   title,
@@ -15,7 +13,7 @@ const ListItem = ({
   onClick = () => {},
   onRemoveClick = () => {},
   onRestoreClick = () => {},
-}: IListItemProps) => {
+}) => {
   if (type === "registration") {
     return (
       <div className="list__item__registration" onClick={onClick}>

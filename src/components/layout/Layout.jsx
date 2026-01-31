@@ -1,9 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import Tab from "../tab/Tab";
-import type { ITabItem } from "../tab/tab.interface";
 import "./layout.styles.scss";
 
-const Layout = ({ children }: { children?: React.ReactNode }) => {
+const Layout = ({ children }) => {
   const navigate = useNavigate();
 
   const tabItems = [
@@ -24,7 +23,7 @@ const Layout = ({ children }: { children?: React.ReactNode }) => {
     },
   ];
 
-  const handleTabClick = (item: ITabItem) => {
+  const handleTabClick = (item) => {
     navigate(`/${item.value.toLowerCase()}`);
   };
 

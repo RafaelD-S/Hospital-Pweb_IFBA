@@ -2,14 +2,13 @@ import { useState } from "react";
 import AuthForm from "../../components/authForm/AuthForm";
 import Button from "../../components/button/Button";
 import Input from "../../components/input/Input";
-import type { ISelectOption } from "../../components/select/select.interface";
 import "./registerDoctor.styles.scss";
 import Select from "../../components/select/select";
 import Warning from "../../components/warning/Warning";
 import Modal from "../../components/modal/Modal";
 import { useNavigate } from "react-router-dom";
 
-const specialtyOptions: ISelectOption[] = [
+const specialtyOptions = [
   {
     label: "Ortopedia",
     value: "0",
@@ -28,13 +27,14 @@ const specialtyOptions: ISelectOption[] = [
   },
 ];
 
-const RegisterPacient = () => {
+const RegisterDoctor = () => {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [cpf, setCpf] = useState("");
+  const [specialty, setSpecialty] = useState("");
+  const [crm, setCrm] = useState("");
   const [logradouro, setLogradouro] = useState("");
   const [numero, setNumero] = useState("");
   const [complemento, setComplemento] = useState("");
@@ -45,14 +45,15 @@ const RegisterPacient = () => {
   const [warningMessage, setWarningMessage] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const formSubmit = (e: React.FormEvent) => {
+  const formSubmit = (e) => {
     e.preventDefault();
     const registerData = {
       name,
       email,
       phone,
       password,
-      cpf,
+      specialty,
+      crm,
       logradouro,
       numero,
       complemento,
@@ -93,12 +94,17 @@ const RegisterPacient = () => {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
+          <Select
+            label="Especialidade"
+            onChange={(item) => setSpecialty(item)}
+            options={specialtyOptions}
+          />
           <Input
-            label="CPF"
-            placeholder="Digite o CPF"
+            label="CRM"
+            placeholder="Digite o CRM"
             type="text"
-            value={cpf}
-            onChange={(e) => setCpf(e.target.value)}
+            value={crm}
+            onChange={(e) => setCrm(e.target.value)}
           />
           <Input
             label="CEP"
@@ -182,4 +188,4 @@ const RegisterPacient = () => {
   );
 };
 
-export default RegisterPacient;
+export default RegisterDoctor;
