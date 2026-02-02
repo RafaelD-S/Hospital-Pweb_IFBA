@@ -8,6 +8,7 @@
   align-items: center;
   background-color: $overlay;
   inset: 0;
+  z-index: 10;
 
   &__container {
     background-color: $background;

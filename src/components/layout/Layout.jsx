@@ -1,9 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import Tab from "../tab/Tab";
 import "./layout.styles.scss";
+import { useAuth } from "../../hooks/useAuth";
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   const tabItems = [
     {
@@ -21,6 +23,15 @@ const Layout = ({ children }) => {
       value: "consultas",
       active: false,
     },
+    ...(isAdmin
+      ? [
+          {
+            label: "Pendências",
+            value: "pendentes",
+            active: false,
+          },
+        ]
+      : []),
   ];
 
   const handleTabClick = (item) => {

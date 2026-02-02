@@ -1,120 +1,337 @@
-import { useState } from "react";
-import List from "../../components/list/List";
-import Input from "../../components/input/Input";
+import { Fragment, useEffect, useState } from "react";
+import Warning from "../../components/warning/Warning";
+import { useAuth } from "../../hooks/useAuth";
+import ListItem from "../../components/listItem/listItem";
+import "./pacientPage.styles.scss";
+
+import Remove from "../../assets/remove.svg";
+import Restore from "../../assets/restore.svg";
+import Edit from "../../assets/edit.svg";
 import Modal from "../../components/modal/Modal";
-import { pacientMock } from "../../mocks/pacient.mock";
+import Input from "../../components/input/Input";
 import Button from "../../components/button/Button";
+import { isValidPhone, isValidState, isValidZip } from "../../utils/validators";
 
 const PacientPage = () => {
-  const [pacients, setPacients] = useState(pacientMock);
+  const { token } = useAuth();
+  const [pacients, setPacients] = useState([]);
   const [selectedPacient, setSelectedPacient] = useState(null);
+  const [formName, setFormName] = useState("");
+  const [formPhone, setFormPhone] = useState("");
+  const [formStreet, setFormStreet] = useState("");
+  const [formNumber, setFormNumber] = useState("");
+  const [formComplement, setFormComplement] = useState("");
+  const [formNeighborhood, setFormNeighborhood] = useState("");
+  const [formCity, setFormCity] = useState("");
+  const [formState, setFormState] = useState("");
+  const [formZipcode, setFormZipcode] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [warningMessage, setWarningMessage] = useState("");
 
-  const handleRemovePacient = (item) => {
-    setPacients((prev) =>
-      prev.map((p) => (p.title === item.title ? { ...p, disabled: true } : p)),
-    );
+  // tipagem
+  // id: string
+  // name: string
+  // email: string
+  // cpf: string
+  // phone: string
+  // disabled: boolean
+  // address: {
+  //   city: string
+  //   complement: string
+  //   neighborhood: string
+  //   number: string
+  //   state: string
+  //   street: string
+  //   zipcode: string
+  // }
+  const mapPacient = (pacient) => {
+    return {
+      id: pacient?.id,
+      name: pacient?.name ?? "",
+      email: pacient?.email ?? "",
+      cpf: pacient?.cpf ?? "",
+      phone: pacient?.phone ?? "",
+      disabled: pacient?.status === false,
+      address: pacient?.address ?? {},
+    };
   };
 
-  const handleRestorePacient = (item) => {
-    setPacients((prev) =>
-      prev.map((p) => (p.title === item.title ? { ...p, disabled: false } : p)),
-    );
+  const openEditModal = (pacient) => {
+    setSelectedPacient(pacient);
+    setFormName(pacient?.name ?? "");
+    setFormPhone(pacient?.phone ?? "");
+    setFormStreet(pacient?.address?.street ?? "");
+    setFormNumber(pacient?.address?.number ?? "");
+    setFormComplement(pacient?.address?.complement ?? "");
+    setFormNeighborhood(pacient?.address?.neighborhood ?? "");
+    setFormCity(pacient?.address?.city ?? "");
+    setFormState(pacient?.address?.state ?? "");
+    setFormZipcode(pacient?.address?.zipCode ?? "");
   };
 
-  const handleRegisterPacient = () => {
-    setSelectedPacient({});
+  const closeEditModal = () => {
+    setSelectedPacient(null);
   };
+
+  const handleSave = async () => {
+    if (!selectedPacient) return;
+    if (!formName.trim())
+      return setWarningMessage("Informe o nome do paciente.");
+    if (!formPhone.trim() || !isValidPhone(formPhone))
+      return setWarningMessage(
+        "Informe um telefone válido (ex.: (00) 00000-0000 ou 00000000000).",
+      );
+    if (!formStreet.trim()) return setWarningMessage("Informe o logradouro.");
+    if (!formNeighborhood.trim()) return setWarningMessage("Informe o bairro.");
+    if (!formCity.trim()) return setWarningMessage("Informe a cidade.");
+    if (!formState.trim() || !isValidState(formState))
+      return setWarningMessage("Informe a UF com 2 letras (ex.: BA, SP).");
+    if (!formZipcode.trim() || !isValidZip(formZipcode))
+      return setWarningMessage("Informe um CEP válido (00000-000).");
+
+    setIsSaving(true);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+      const response = await fetch(`${apiUrl}/patients/${selectedPacient.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: formName.trim(),
+          phone: formPhone.trim(),
+          status: selectedPacient.disabled ? false : true,
+          address: {
+            street: formStreet.trim(),
+            number: formNumber.trim(),
+            complement: formComplement.trim(),
+            neighborhood: formNeighborhood.trim(),
+            city: formCity.trim(),
+            state: formState.trim(),
+            zipCode: formZipcode.trim(),
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        let message = "Não foi possível atualizar o paciente.";
+        try {
+          const data = await response.json();
+          message = data?.message ?? message;
+        } catch {
+          // noop
+        }
+        throw new Error(message);
+      }
+
+      const data = await response.json();
+      const updated = data ? mapPacient(data) : null;
+      if (updated) {
+        setPacients((prev) =>
+          prev.map((p) => (p.id === updated.id ? updated : p)),
+        );
+      }
+      closeEditModal();
+    } catch (error) {
+      setWarningMessage(
+        error?.message ?? "Não foi possível atualizar o paciente.",
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleToggleStatus = async (pacient) => {
+    if (!pacient?.id) return;
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+      const response = await fetch(`${apiUrl}/patients/${pacient.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: pacient.name,
+          phone: pacient.phone,
+          status: pacient.disabled ? true : false,
+          address: {
+            street: pacient.address?.street ?? "",
+            number: pacient.address?.number ?? "",
+            complement: pacient.address?.complement ?? "",
+            neighborhood: pacient.address?.neighborhood ?? "",
+            city: pacient.address?.city ?? "",
+            state: pacient.address?.state ?? "",
+            zipCode: pacient.address?.zipCode ?? "",
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        let message = "Não foi possível atualizar o status do paciente.";
+        try {
+          const data = await response.json();
+          message = data?.message ?? message;
+        } catch {
+          // noop
+        }
+        throw new Error(message);
+      }
+
+      const data = await response.json();
+      const updated = data ? mapPacient(data) : null;
+      if (updated) {
+        setPacients((prev) =>
+          prev.map((p) => (p.id === updated.id ? updated : p)),
+        );
+      } else {
+        setPacients((prev) =>
+          prev.map((p) =>
+            p.id === pacient.id ? { ...p, disabled: !p.disabled } : p,
+          ),
+        );
+      }
+    } catch (error) {
+      setWarningMessage(
+        error?.message ?? "Não foi possível atualizar o status do paciente.",
+      );
+    }
+  };
+
+  useEffect(() => {
+    const fetchPacients = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+        const response = await fetch(`${apiUrl}/patients/all`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Não foi possível carregar pacientes.");
+        }
+
+        const data = await response.json();
+        console.log(data);
+
+        const list = Array.isArray(data)
+          ? data.map(mapPacient)
+          : Array.isArray(data?.content)
+            ? data.content.map(mapPacient)
+            : [];
+        setPacients(list);
+      } catch (error) {
+        setWarningMessage(
+          error?.message ?? "Não foi possível carregar pacientes.",
+        );
+      }
+    };
+
+    if (token) fetchPacients();
+  }, [token]);
 
   return (
     <div className="pacient-page">
-      <List
-        items={pacients}
-        registrationTitle="Cadastrar Paciente"
-        onEditClick={(item) =>
-          setSelectedPacient(
-            pacients.find((p) => p.title === item.title) ?? null,
-          )
-        }
-        onRegistrationClick={handleRegisterPacient}
-        onRemoveClick={handleRemovePacient}
-        onRestoreClick={handleRestorePacient}
-      />
+      <div className="pacient-page__content">
+        {pacients.map((item) => (
+          <Fragment key={item.id}>
+            <ListItem
+              title={item.name}
+              subtitle={item.cpf}
+              description={item.email}
+              disabled={item.disabled}
+            >
+              {item.disabled ? (
+                <img
+                  src={Restore}
+                  alt="Restore"
+                  onClick={() => handleToggleStatus(item)}
+                />
+              ) : (
+                <img
+                  src={Remove}
+                  alt="Remove"
+                  onClick={() => handleToggleStatus(item)}
+                />
+              )}
+              <img src={Edit} alt="Edit" onClick={() => openEditModal(item)} />
+            </ListItem>
 
-      {selectedPacient && (
-        <Modal
-          isOpen={true}
-          onClickOutside={() => setSelectedPacient(null)}
-          onSubmit={() => setSelectedPacient(null)}
-        >
-          <Modal.Title>Editar Paciente</Modal.Title>
+            {selectedPacient?.id === item.id && (
+              <Modal isOpen={true} onClickOutside={closeEditModal}>
+                <Modal.Title>Editar {item.name}</Modal.Title>
+                <Input
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                  label="Nome"
+                  placeholder="Digite o nome"
+                />
+                <Input
+                  value={formPhone}
+                  onChange={(e) => setFormPhone(e.target.value)}
+                  label="Telefone"
+                  placeholder="Digite o telefone"
+                />
+                <Input
+                  value={formStreet}
+                  onChange={(e) => setFormStreet(e.target.value)}
+                  label="Logradouro"
+                  placeholder="Digite o logradouro"
+                />
+                <Input
+                  value={formNumber}
+                  onChange={(e) => setFormNumber(e.target.value)}
+                  label="Número"
+                  placeholder="Digite o número"
+                />
+                <Input
+                  value={formComplement}
+                  onChange={(e) => setFormComplement(e.target.value)}
+                  label="Complemento"
+                  placeholder="Digite o complemento"
+                />
+                <Input
+                  value={formNeighborhood}
+                  onChange={(e) => setFormNeighborhood(e.target.value)}
+                  label="Bairro"
+                  placeholder="Digite o bairro"
+                />
+                <Input
+                  value={formCity}
+                  onChange={(e) => setFormCity(e.target.value)}
+                  label="Cidade"
+                  placeholder="Digite a cidade"
+                />
+                <Input
+                  value={formState}
+                  onChange={(e) => setFormState(e.target.value)}
+                  label="Estado"
+                  placeholder="Digite o estado"
+                />
+                <Input
+                  value={formZipcode}
+                  onChange={(e) => setFormZipcode(e.target.value)}
+                  label="CEP"
+                  placeholder="Digite o CEP"
+                />
+                <Button onClick={handleSave} disabled={isSaving}>
+                  Salvar
+                </Button>
+              </Modal>
+            )}
+          </Fragment>
+        ))}
+      </div>
 
-          <Input
-            label="Nome"
-            placeholder="Digite o nome completo"
-            defaultValue={selectedPacient.title}
-          />
-
-          <Input
-            label="Email"
-            placeholder="Digite o email"
-            type="email"
-            defaultValue={selectedPacient.email}
-          />
-          <Input
-            label="Telefone"
-            placeholder="Digite o telefone"
-            type="tel"
-            defaultValue={selectedPacient.telefone}
-          />
-          <Input
-            label="CPF"
-            placeholder="Digite o CPF"
-            type="text"
-            defaultValue={selectedPacient.cpf}
-          />
-          <Input
-            label="Logradouro"
-            placeholder="Digite o logradouro"
-            defaultValue={selectedPacient.logradouro}
-          />
-          <Input
-            label="Número"
-            placeholder="Digite o número"
-            type="text"
-            defaultValue={selectedPacient.numero}
-          />
-          <Input
-            label="Complemento"
-            placeholder="Digite o complemento"
-            defaultValue={selectedPacient.complemento}
-          />
-          <Input
-            label="Bairro"
-            placeholder="Digite o bairro"
-            type="text"
-            defaultValue={selectedPacient.bairro}
-          />
-          <Input
-            label="Cidade"
-            placeholder="Digite a cidade"
-            type="text"
-            defaultValue={selectedPacient.cidade}
-          />
-          <Input
-            label="Estado"
-            placeholder="Digite o estado"
-            type="text"
-            defaultValue={selectedPacient.estado}
-          />
-          <Input
-            label="CEP"
-            placeholder="Digite o CEP"
-            type="text"
-            defaultValue={selectedPacient.cep}
-          />
-
-          <Button type="submit">Salvar</Button>
-        </Modal>
+      {warningMessage && (
+        <Warning
+          message={warningMessage}
+          action="Fechar"
+          onActionClick={() => setWarningMessage("")}
+        />
       )}
     </div>
   );

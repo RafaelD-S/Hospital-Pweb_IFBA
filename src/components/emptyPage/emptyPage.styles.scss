@@ -1,0 +1,35 @@
+@use "../../styles/variables.scss" as *;
+
+.empty-page {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+
+  img {
+    opacity: 0.8;
+  }
+
+  &__textbox {
+    display: grid;
+    gap: 4px;
+  }
+
+  &__title {
+    color: $text-primary;
+    font-size: 32px;
+    letter-spacing: -0.02em;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+
+  &__description {
+    letter-spacing: -0.02em;
+    color: $text-secondary;
+    font-size: 16px;
+    font-weight: 500;
+  }
+}

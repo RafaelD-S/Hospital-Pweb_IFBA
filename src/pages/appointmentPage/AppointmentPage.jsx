@@ -1,12 +1,10 @@
-import { useMemo, useState } from "react";
-import List from "../../components/list/List";
+import { useEffect, useMemo, useState } from "react";
 import Modal from "../../components/modal/Modal";
 import Input from "../../components/input/Input";
 import Select from "../../components/select/select";
 import Warning from "../../components/warning/Warning";
 import Button from "../../components/button/Button";
-import { doctorsMock } from "../../mocks/doctor.mock";
-import { pacientMock } from "../../mocks/pacient.mock";
+import { useAuth } from "../../hooks/useAuth";
 
 const toDateTime = (date, hour) => new Date(`${date}T${hour}:00`);
 
@@ -40,7 +38,10 @@ const businessHoursOptions = (dateStr) => {
 };
 
 const AppointmentPage = () => {
+  const { token } = useAuth();
   const [appointments, setAppointments] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [pacients, setPacients] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState("");
@@ -56,18 +57,146 @@ const AppointmentPage = () => {
   const [cancelAppointment, setCancelAppointment] = useState(null);
 
   const activePacients = useMemo(
-    () => pacientMock.filter((p) => !p.disabled),
-    [],
+    () => pacients.filter((p) => !p.disabled),
+    [pacients],
   );
   const activeDoctors = useMemo(
-    () => doctorsMock.filter((d) => !d.disabled),
-    [],
+    () => doctors.filter((d) => !d.disabled),
+    [doctors],
   );
+
+  const parseAppointmentTime = (dateTime) => {
+    if (!dateTime) return { date: "", hour: "" };
+    const d = new Date(dateTime);
+    if (Number.isNaN(d.getTime())) return { date: "", hour: "" };
+    const date = d.toLocaleDateString("en-CA");
+    const hour = d.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    return { date, hour };
+  };
+
+  const mapDoctor = (doctor) => {
+    const address = doctor?.address ?? {};
+    return {
+      id: doctor?.id ?? doctor?.doctorId ?? doctor?.userId,
+      title: doctor?.name ?? "",
+      description: doctor?.specialty ?? "",
+      email: doctor?.email ?? "",
+      telefone: doctor?.phone ?? "",
+      crm: doctor?.crm ?? "",
+      logradouro: address?.street ?? "",
+      numero: address?.number ?? "",
+      complemento: address?.complement ?? "",
+      bairro: address?.neighborhood ?? "",
+      cidade: address?.city ?? "",
+      estado: address?.state ?? "",
+      cep: address?.zipCode ?? "",
+      disabled: doctor?.enabled === false || doctor?.active === false,
+    };
+  };
+
+  const mapPacient = (pacient) => {
+    const address = pacient?.address ?? {};
+    return {
+      id: pacient?.id ?? pacient?.patientId ?? pacient?.userId,
+      title: pacient?.name ?? "",
+      email: pacient?.email ?? "",
+      telefone: pacient?.phone ?? "",
+      cpf: pacient?.cpf ?? "",
+      logradouro: address?.street ?? "",
+      numero: address?.number ?? "",
+      complemento: address?.complement ?? "",
+      bairro: address?.neighborhood ?? "",
+      cidade: address?.city ?? "",
+      estado: address?.state ?? "",
+      cep: address?.zipCode ?? "",
+      disabled: pacient?.enabled === false || pacient?.active === false,
+    };
+  };
+
+  const mapAppointment = (appointment) => {
+    const patient = appointment?.patient ?? appointment?.pacient;
+    const doctor = appointment?.doctor ?? {};
+    const time =
+      appointment?.appointmentTime ??
+      appointment?.dateTime ??
+      appointment?.time;
+    const { date, hour } = parseAppointmentTime(time);
+
+    return {
+      id: appointment?.id ?? appointment?.appointmentId,
+      pacientId: patient?.id ?? appointment?.patientId,
+      doctorCrm: doctor?.crm ?? appointment?.doctorCrm,
+      pacient: patient?.name ?? appointment?.patientName ?? "",
+      doctor: doctor?.name ?? appointment?.doctorName ?? "",
+      date,
+      hour,
+    };
+  };
+
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+
+    const fetchDoctors = async () => {
+      const response = await fetch(`${apiUrl}/doctors`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("Não foi possível carregar médicos.");
+      const data = await response.json();
+      setDoctors(Array.isArray(data) ? data.map(mapDoctor) : []);
+    };
+
+    const fetchPacients = async () => {
+      const response = await fetch(`${apiUrl}/patients`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("Não foi possível carregar pacientes.");
+      const data = await response.json();
+      setPacients(Array.isArray(data) ? data.map(mapPacient) : []);
+    };
+
+    const fetchAppointments = async () => {
+      const response = await fetch(`${apiUrl}/appointments`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("Não foi possível carregar consultas.");
+      const data = await response.json();
+      setAppointments(Array.isArray(data) ? data.map(mapAppointment) : []);
+    };
+
+    const fetchAll = async () => {
+      try {
+        await Promise.all([
+          fetchDoctors(),
+          fetchPacients(),
+          fetchAppointments(),
+        ]);
+      } catch (error) {
+        setWarning(error?.message ?? "Não foi possível carregar dados.");
+      }
+    };
+
+    if (token) fetchAll();
+  }, [token]);
 
   const patientHasAppointmentSameDay = useMemo(() => {
     if (!selectedPacient || !selectedDate) return false;
     return appointments.some(
-      (a) => a.pacient === selectedPacient && a.date === selectedDate,
+      (a) =>
+        String(a.pacientId) === String(selectedPacient) &&
+        a.date === selectedDate,
     );
   }, [appointments, selectedPacient, selectedDate]);
 
@@ -75,7 +204,7 @@ const AppointmentPage = () => {
     if (!selectedDoctor || !selectedDate || !selectedHour) return false;
     return appointments.some(
       (a) =>
-        a.doctor === selectedDoctor &&
+        a.doctorCrm === selectedDoctor &&
         a.date === selectedDate &&
         a.hour === selectedHour,
     );
@@ -92,17 +221,20 @@ const AppointmentPage = () => {
   const availableDoctorsForSelection = useMemo(() => {
     if (!selectedDate || !selectedHour)
       return activeDoctors.map((d) => ({
-        label: d.title ?? "",
-        value: d.title ?? "",
+        label: d.title ? `${d.title} (${d.crm})` : (d.crm ?? ""),
+        value: d.crm ?? "",
       }));
     const booked = new Set(
       appointments
         .filter((a) => a.date === selectedDate && a.hour === selectedHour)
-        .map((a) => a.doctor),
+        .map((a) => a.doctorCrm),
     );
     return activeDoctors
-      .filter((d) => !booked.has(d.title ?? ""))
-      .map((d) => ({ label: d.title ?? "", value: d.title ?? "" }));
+      .filter((d) => !booked.has(d.crm ?? ""))
+      .map((d) => ({
+        label: d.title ? `${d.title} (${d.crm})` : (d.crm ?? ""),
+        value: d.crm ?? "",
+      }));
   }, [activeDoctors, appointments, selectedDate, selectedHour]);
 
   const listItems = useMemo(
@@ -173,7 +305,7 @@ const AppointmentPage = () => {
 
     const conflict = appointments.some(
       (a) =>
-        a.doctor === doctorToAssign &&
+        a.doctorCrm === doctorToAssign &&
         a.date === selectedDate &&
         a.hour === selectedHour,
     );
@@ -182,18 +314,60 @@ const AppointmentPage = () => {
       return;
     }
 
-    setAppointments((prev) => [
-      ...prev,
-      {
-        id: `${selectedDate}-${selectedHour}-${selectedPacient}`,
-        pacient: selectedPacient,
-        doctor: doctorToAssign,
-        date: selectedDate,
-        hour: selectedHour,
-      },
-    ]);
+    const registerAppointment = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+        const body = {
+          patientId: Number(selectedPacient),
+          appointmentTime: `${selectedDate}T${selectedHour}:00`,
+        };
+        if (doctorToAssign) body.doctorCrm = doctorToAssign;
 
-    closeRegistration();
+        const response = await fetch(`${apiUrl}/appointments`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+          let message = "Erro ao agendar consulta.";
+          try {
+            const data = await response.json();
+            message = data?.message ?? message;
+          } catch {
+            // noop
+          }
+          throw new Error(message);
+        }
+
+        const data = await response.json();
+        if (data) {
+          setAppointments((prev) => [mapAppointment(data), ...prev]);
+        } else {
+          const refresh = await fetch(`${apiUrl}/appointments`, {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (refresh.ok) {
+            const list = await refresh.json();
+            setAppointments(
+              Array.isArray(list) ? list.map(mapAppointment) : [],
+            );
+          }
+        }
+
+        closeRegistration();
+      } catch (error) {
+        setWarning(error?.message ?? "Erro ao agendar consulta.");
+      }
+    };
+
+    registerAppointment();
   };
 
   return (
@@ -271,8 +445,8 @@ const AppointmentPage = () => {
             label="Paciente"
             options={activePacients.map((p) => ({
               label: p.title ?? "",
-              value: p.title ?? "",
-              selected: (p.title ?? "") === selectedPacient,
+              value: String(p.id ?? ""),
+              selected: String(p.id ?? "") === String(selectedPacient),
             }))}
             onChange={(val) => setSelectedPacient(val)}
           />
@@ -323,19 +497,43 @@ const AppointmentPage = () => {
               setWarning("Informe o motivo do cancelamento.");
               return;
             }
-            setAppointments((prev) =>
-              prev.filter(
-                (a) =>
-                  !(
-                    a.pacient === cancelAppointment.pacient &&
-                    a.doctor === cancelAppointment.doctor &&
-                    a.date === cancelAppointment.date &&
-                    a.hour === cancelAppointment.hour
-                  ),
-              ),
-            );
-            setCancelModalOpen(false);
-            setCancelAppointment(null);
+            const cancelApi = async () => {
+              try {
+                const apiUrl =
+                  import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+                const response = await fetch(
+                  `${apiUrl}/appointments/${cancelAppointment.id}`,
+                  {
+                    method: "DELETE",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`,
+                    },
+                  },
+                );
+
+                if (!response.ok) {
+                  let message = "Erro ao cancelar consulta.";
+                  try {
+                    const data = await response.json();
+                    message = data?.message ?? message;
+                  } catch {
+                    // noop
+                  }
+                  throw new Error(message);
+                }
+
+                setAppointments((prev) =>
+                  prev.filter((a) => a.id !== cancelAppointment.id),
+                );
+                setCancelModalOpen(false);
+                setCancelAppointment(null);
+              } catch (error) {
+                setWarning(error?.message ?? "Erro ao cancelar consulta.");
+              }
+            };
+
+            cancelApi();
           }}
         >
           <Modal.Title>Cancelar Consulta</Modal.Title>

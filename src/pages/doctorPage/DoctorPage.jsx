@@ -1,146 +1,326 @@
-import { useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import Input from "../../components/input/Input";
-import List from "../../components/list/List";
 import Modal from "../../components/modal/Modal";
-import Select from "../../components/select/select";
-import { doctorsMock } from "../../mocks/doctor.mock";
 import Button from "../../components/button/Button";
+import Warning from "../../components/warning/Warning";
+import { useAuth } from "../../hooks/useAuth";
+import ListItem from "../../components/listItem/listItem";
+import "./doctorPage.styles.scss";
+import Edit from "../../assets/edit.svg";
+import Remove from "../../assets/remove.svg";
+import Restore from "../../assets/restore.svg";
+import { isValidPhone, isValidState, isValidZip } from "../../utils/validators";
+import EmptyPage from "../../components/emptyPage/emptyPage";
 
 const DoctorPage = () => {
-  const [doctors, setDoctors] = useState(doctorsMock);
+  const { token } = useAuth();
+  const [doctors, setDoctors] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [formName, setFormName] = useState("");
+  const [formPhone, setFormPhone] = useState("");
+  const [formStreet, setFormStreet] = useState("");
+  const [formNumber, setFormNumber] = useState("");
+  const [formComplement, setFormComplement] = useState("");
+  const [formNeighborhood, setFormNeighborhood] = useState("");
+  const [formCity, setFormCity] = useState("");
+  const [formState, setFormState] = useState("");
+  const [formZipcode, setFormZipcode] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [warningMessage, setWarningMessage] = useState("");
 
-  const handleRemoveDoctor = (item) => {
-    setDoctors((prev) =>
-      prev.map((d) => (d.title === item.title ? { ...d, disabled: true } : d)),
-    );
+  const mapDoctor = (doctor) => {
+    const address = doctor?.address ?? {};
+    return {
+      id: doctor?.id ?? doctor?.doctorId ?? doctor?.userId,
+      name: doctor?.name ?? "",
+      specialty: doctor?.specialty ?? "",
+      email: doctor?.email ?? "",
+      phone: doctor?.phone ?? "",
+      crm: doctor?.crm ?? "",
+      address,
+      disabled: doctor?.status === false,
+    };
   };
 
-  const handleRestoreDoctor = (item) => {
-    setDoctors((prev) =>
-      prev.map((d) => (d.title === item.title ? { ...d, disabled: false } : d)),
-    );
+  const openEditModal = (doctor) => {
+    setSelectedDoctor(doctor);
+    setFormName(doctor?.name ?? "");
+    setFormPhone(doctor?.phone ?? "");
+    setFormStreet(doctor?.address?.street ?? "");
+    setFormNumber(doctor?.address?.number ?? "");
+    setFormComplement(doctor?.address?.complement ?? "");
+    setFormNeighborhood(doctor?.address?.neighborhood ?? "");
+    setFormCity(doctor?.address?.city ?? "");
+    setFormState(doctor?.address?.state ?? "");
+    setFormZipcode(doctor?.address?.zipCode ?? "");
   };
 
-  const handleRegisterDoctor = () => {
-    setSelectedDoctor({});
+  const closeEditModal = () => {
+    setSelectedDoctor(null);
+  };
+
+  const handleSave = async () => {
+    if (!selectedDoctor) return;
+    if (!formName.trim()) return setWarningMessage("Informe o nome do médico.");
+    if (!formPhone.trim() || !isValidPhone(formPhone))
+      return setWarningMessage(
+        "Informe um telefone válido (ex.: (00) 00000-0000 ou 00000000000).",
+      );
+    if (!formStreet.trim()) return setWarningMessage("Informe o logradouro.");
+    if (!formNeighborhood.trim()) return setWarningMessage("Informe o bairro.");
+    if (!formCity.trim()) return setWarningMessage("Informe a cidade.");
+    if (!formState.trim() || !isValidState(formState))
+      return setWarningMessage("Informe a UF com 2 letras (ex.: BA, SP).");
+    if (!formZipcode.trim() || !isValidZip(formZipcode))
+      return setWarningMessage("Informe um CEP válido (00000-000).");
+
+    setIsSaving(true);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+      const response = await fetch(`${apiUrl}/doctors/${selectedDoctor.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: formName.trim(),
+          phone: formPhone.trim(),
+          status: selectedDoctor.disabled ? false : true,
+          address: {
+            street: formStreet.trim(),
+            number: formNumber.trim(),
+            complement: formComplement.trim(),
+            neighborhood: formNeighborhood.trim(),
+            city: formCity.trim(),
+            state: formState.trim(),
+            zipCode: formZipcode.trim(),
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        let message = "Não foi possível atualizar o médico.";
+        try {
+          const data = await response.json();
+          message = data?.message ?? message;
+        } catch {
+          // noop
+        }
+        throw new Error(message);
+      }
+
+      const data = await response.json();
+      const updated = data ? mapDoctor(data) : null;
+      if (updated) {
+        setDoctors((prev) =>
+          prev.map((d) => (d.id === updated.id ? updated : d)),
+        );
+      }
+      closeEditModal();
+    } catch (error) {
+      setWarningMessage(
+        error?.message ?? "Não foi possível atualizar o médico.",
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+        const response = await fetch(`${apiUrl}/doctors/all`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Não foi possível carregar médicos.");
+        }
+
+        const data = await response.json();
+        const list = Array.isArray(data)
+          ? data.map(mapDoctor)
+          : Array.isArray(data?.content)
+            ? data.content.map(mapDoctor)
+            : [];
+        setDoctors(list);
+      } catch (error) {
+        setWarningMessage(
+          error?.message ?? "Não foi possível carregar médicos.",
+        );
+      }
+    };
+
+    if (token) fetchDoctors();
+  }, [token]);
+
+  const handleToggleStatus = async (doctor) => {
+    if (!doctor?.id) return;
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+      const response = await fetch(`${apiUrl}/doctors/${doctor.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: doctor.name,
+          phone: doctor.phone,
+          status: doctor.disabled ? true : false,
+          address: {
+            street: doctor.address?.street ?? "",
+            number: doctor.address?.number ?? "",
+            complement: doctor.address?.complement ?? "",
+            neighborhood: doctor.address?.neighborhood ?? "",
+            city: doctor.address?.city ?? "",
+            state: doctor.address?.state ?? "",
+            zipCode: doctor.address?.zipCode ?? "",
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        let message = "Não foi possível atualizar o status do médico.";
+        try {
+          const data = await response.json();
+          message = data?.message ?? message;
+        } catch {
+          // noop
+        }
+        throw new Error(message);
+      }
+
+      const data = await response.json();
+      const updated = data ? mapDoctor(data) : null;
+      if (updated) {
+        setDoctors((prev) =>
+          prev.map((d) => (d.id === updated.id ? updated : d)),
+        );
+      } else {
+        setDoctors((prev) =>
+          prev.map((d) =>
+            d.id === doctor.id ? { ...d, disabled: !d.disabled } : d,
+          ),
+        );
+      }
+    } catch (error) {
+      setWarningMessage(
+        error?.message ?? "Não foi possível atualizar o status do médico.",
+      );
+    }
   };
 
   return (
     <div className="doctor-page">
-      <List
-        items={doctors}
-        registrationTitle="Cadastrar Médico"
-        onEditClick={(item) =>
-          setSelectedDoctor(doctors.find((d) => d.title === item.title) ?? null)
-        }
-        onRemoveClick={handleRemoveDoctor}
-        onRestoreClick={handleRestoreDoctor}
-        onRegistrationClick={handleRegisterDoctor}
-      />
+      <div className="doctor-page__content">
+        {doctors.map((item) => (
+          <Fragment key={item.id}>
+            <ListItem
+              title={item.name}
+              subtitle={item.crm}
+              description={`${item.specialty ?? ""} • ${item.email}`}
+              disabled={item.disabled}
+            >
+              {item.disabled ? (
+                <img
+                  src={Restore}
+                  alt="Restore"
+                  onClick={() => handleToggleStatus(item)}
+                />
+              ) : (
+                <img
+                  src={Remove}
+                  alt="Remove"
+                  onClick={() => handleToggleStatus(item)}
+                />
+              )}
+              <img src={Edit} alt="Edit" onClick={() => openEditModal(item)} />
+            </ListItem>
 
-      {selectedDoctor && (
-        <Modal
-          isOpen={true}
-          onClickOutside={() => setSelectedDoctor(null)}
-          onSubmit={() => setSelectedDoctor(null)}
-        >
-          <Modal.Title>Editar Médico</Modal.Title>
+            {selectedDoctor?.id === item.id && (
+              <Modal isOpen={true} onClickOutside={closeEditModal}>
+                <Modal.Title>Editar {item.name}</Modal.Title>
+                <Input
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                  label="Nome"
+                  placeholder="Digite o nome"
+                />
+                <Input
+                  value={formPhone}
+                  onChange={(e) => setFormPhone(e.target.value)}
+                  label="Telefone"
+                  placeholder="Digite o telefone"
+                />
+                <Input
+                  value={formStreet}
+                  onChange={(e) => setFormStreet(e.target.value)}
+                  label="Logradouro"
+                  placeholder="Digite o logradouro"
+                />
+                <Input
+                  value={formNumber}
+                  onChange={(e) => setFormNumber(e.target.value)}
+                  label="Número"
+                  placeholder="Digite o número"
+                />
+                <Input
+                  value={formComplement}
+                  onChange={(e) => setFormComplement(e.target.value)}
+                  label="Complemento"
+                  placeholder="Digite o complemento"
+                />
+                <Input
+                  value={formNeighborhood}
+                  onChange={(e) => setFormNeighborhood(e.target.value)}
+                  label="Bairro"
+                  placeholder="Digite o bairro"
+                />
+                <Input
+                  value={formCity}
+                  onChange={(e) => setFormCity(e.target.value)}
+                  label="Cidade"
+                  placeholder="Digite a cidade"
+                />
+                <Input
+                  value={formState}
+                  onChange={(e) => setFormState(e.target.value)}
+                  label="Estado"
+                  placeholder="Digite o estado"
+                />
+                <Input
+                  value={formZipcode}
+                  onChange={(e) => setFormZipcode(e.target.value)}
+                  label="CEP"
+                  placeholder="Digite o CEP"
+                />
+                <Button onClick={handleSave} disabled={isSaving}>
+                  Salvar
+                </Button>
+              </Modal>
+            )}
+          </Fragment>
+        ))}
+      </div>
 
-          <Input
-            label="Nome"
-            placeholder="Digite o nome completo"
-            defaultValue={selectedDoctor.title}
-          />
-
-          <Input
-            label="Email"
-            placeholder="Digite o email"
-            type="email"
-            defaultValue={selectedDoctor.email}
-          />
-          <Input
-            label="Telefone"
-            placeholder="Digite o telefone"
-            type="tel"
-            defaultValue={selectedDoctor.telefone}
-          />
-          <Input
-            label="CRM"
-            placeholder="Digite o CRM"
-            type="text"
-            defaultValue={selectedDoctor.crm}
-          />
-          <Input
-            label="Logradouro"
-            placeholder="Digite o logradouro"
-            defaultValue={selectedDoctor.logradouro}
-          />
-          <Input
-            label="Número"
-            placeholder="Digite o número"
-            type="text"
-            defaultValue={selectedDoctor.numero}
-          />
-          <Input
-            label="Complemento"
-            placeholder="Digite o complemento"
-            defaultValue={selectedDoctor.complemento}
-          />
-          <Input
-            label="Bairro"
-            placeholder="Digite o bairro"
-            type="text"
-            defaultValue={selectedDoctor.bairro}
-          />
-          <Input
-            label="Cidade"
-            placeholder="Digite a cidade"
-            type="text"
-            defaultValue={selectedDoctor.cidade}
-          />
-          <Input
-            label="Estado"
-            placeholder="Digite o estado"
-            type="text"
-            defaultValue={selectedDoctor.estado}
-          />
-          <Input
-            label="CEP"
-            placeholder="Digite o CEP"
-            type="text"
-            defaultValue={selectedDoctor.cep}
-          />
-
-          <Select
-            label="Especialidade"
-            onChange={() => {}}
-            options={[
-              {
-                label: "Ortopedia",
-                value: "0",
-                selected: selectedDoctor.description === "Ortopedista",
-              },
-              {
-                label: "Cardiologia",
-                value: "1",
-                selected: selectedDoctor.description === "Cardiologista",
-              },
-              {
-                label: "Ginecologia",
-                value: "2",
-                selected: selectedDoctor.description === "Ginecologista",
-              },
-              {
-                label: "Dermatologia",
-                value: "3",
-                selected: selectedDoctor.description === "Dermatologista",
-              },
-            ]}
-          />
-
-          <Button type="submit">Salvar</Button>
-        </Modal>
+      {doctors.length === 0 && (
+        <EmptyPage
+          title="Nenhum médico encontrado"
+          description="Não há médicos cadastrados no momento."
+        />
+      )}
+      {warningMessage && (
+        <Warning
+          message={warningMessage}
+          action="Fechar"
+          onActionClick={() => setWarningMessage("")}
+        />
       )}
     </div>
   );

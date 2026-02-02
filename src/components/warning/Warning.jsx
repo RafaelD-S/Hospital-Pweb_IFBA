@@ -9,7 +9,7 @@ const Warning = ({ message, action, onActionClick = () => {} }) => {
         <img src={ErrorIcon} alt="Error" />
         <h2 className="warning__message">{message}</h2>
         {action && (
-          <Button value="error" onClick={onActionClick}>
+          <Button value="error" onClick={onActionClick} autoFocus>
             {action}
           </Button>
         )}

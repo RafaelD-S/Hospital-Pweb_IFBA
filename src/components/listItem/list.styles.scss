@@ -1,13 +1,6 @@
 @use "../../styles/variables.scss" as *;
 
 .list {
-  display: grid;
-  gap: 10px;
-  border-bottom: 1px solid $background-secondary;
-  max-height: 672px;
-  padding-bottom: 8px;
-  overflow: auto;
-
   &__item {
     width: 100%;
     background-color: $background-secondary;
@@ -19,6 +12,7 @@
 
     &__textbox {
       display: grid;
+      gap: 2px;
 
       &__title {
         font-size: 16px;
@@ -27,11 +21,25 @@
         color: $text-primary;
       }
 
+      &__subtitle {
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 18px;
+        color: $text-secondary;
+      }
+
       &__description {
         font-size: 12px;
         font-weight: 500;
         line-height: 15px;
-        color: $text-secondary;
+        color: $accent;
+      }
+
+      &__subdescription {
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 15px;
+        color: $secondary;
       }
     }
 
