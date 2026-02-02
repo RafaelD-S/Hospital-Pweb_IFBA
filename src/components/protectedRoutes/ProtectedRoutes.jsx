@@ -4,19 +4,19 @@ import { useAuth } from "../../hooks/useAuth";
 import Layout from "../layout/Layout";
 
 const ProtectedRoutes = ({ children }) => {
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    if (!token) {
+    if (!isAuthenticated) {
       navigate("/login", { replace: true, state: { from: location.pathname } });
     } else if (location.pathname === "/") {
       navigate("/medicos", { replace: true });
     }
-  }, [token, navigate, location]);
+  }, [isAuthenticated, navigate, location]);
 
-  return token ? <Layout>{children}</Layout> : null;
+  return isAuthenticated ? <Layout>{children}</Layout> : null;
 };
 
 export default ProtectedRoutes;

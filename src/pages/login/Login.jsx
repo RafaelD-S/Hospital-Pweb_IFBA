@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../components/button/Button";
 import Input from "../../components/input/Input";
@@ -5,26 +6,39 @@ import Input from "../../components/input/Input";
 import "./login.styles.scss";
 import { useAuth } from "../../hooks/useAuth";
 import AuthForm from "../../components/authForm/AuthForm";
-import { useState } from "react";
 import Warning from "../../components/warning/Warning";
 import Modal from "../../components/modal/Modal";
 
 const Login = () => {
-  const { token } = useAuth();
+  const { isAuthenticated, login } = useAuth();
   const navigate = useNavigate();
   const [nome, setNome] = useState("");
   const [senha, setSenha] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [warningMessage, setWarningMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    if (isAuthenticated) navigate("/medicos", { replace: true });
+  }, [isAuthenticated, navigate]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!token) setWarningMessage("Nome ou senha inválidos");
-    else if (token) navigate("/medicos");
-    else if (nome.trim() === "" || senha.trim() === "")
+    if (nome.trim() === "" || senha.trim() === "") {
       setWarningMessage("Preencha todos os campos");
-    else setWarningMessage("");
+      return;
+    }
+
+    setWarningMessage("");
+    setIsSubmitting(true);
+    try {
+      await login({ email: nome.trim(), password: senha });
+      navigate("/medicos");
+    } catch (error) {
+      setWarningMessage(error?.message ?? "Nome ou senha inválidos");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleRegisterClick = (e) => {
@@ -62,7 +76,7 @@ const Login = () => {
           </p>
         </div>
 
-        <Button type="submit" onClick={handleSubmit}>
+        <Button type="submit" onClick={handleSubmit} disabled={isSubmitting}>
           Login
         </Button>
 
