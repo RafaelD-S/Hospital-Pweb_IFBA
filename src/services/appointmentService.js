@@ -23,22 +23,15 @@ export const completeAppointment = (token, id) =>
     token,
   });
 
-export const getPatientAppointments = (token, patientId, status) => {
+const buildConsultationPath = (role, id, status) => {
   const params = new URLSearchParams();
   if (status) params.set("status", status);
   const query = params.toString();
-  const path = `/appointments/patient/${patientId}/my-consultations${
-    query ? `?${query}` : ""
-  }`;
-  return apiRequest(path, { token });
+  return `/appointments/${role}/${id}/my-consultations${query ? `?${query}` : ""}`;
 };
 
-export const getDoctorAppointments = (token, doctorId, status) => {
-  const params = new URLSearchParams();
-  if (status) params.set("status", status);
-  const query = params.toString();
-  const path = `/appointments/doctor/${doctorId}/my-consultations${
-    query ? `?${query}` : ""
-  }`;
-  return apiRequest(path, { token });
-};
+export const getPatientAppointments = (token, patientId, status) =>
+  apiRequest(buildConsultationPath("patient", patientId, status), { token });
+
+export const getDoctorAppointments = (token, doctorId, status) =>
+  apiRequest(buildConsultationPath("doctor", doctorId, status), { token });

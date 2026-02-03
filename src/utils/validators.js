@@ -9,6 +9,9 @@ export const isValidZip = (value = "") => /^\d{5}-?\d{3}$/.test(value);
 
 export const isValidState = (value = "") => /^[A-Za-z]{2}$/.test(value);
 
+export const isValidCrm = (value = "") =>
+  /^CRM\/([A-Za-z]{2})\s\d{6}$/.test(value);
+
 export const isValidCpf = (value = "") => {
   const cpfDigits = onlyDigits(value);
   if (cpfDigits.length !== 11) return false;

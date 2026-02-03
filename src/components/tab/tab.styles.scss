@@ -12,7 +12,9 @@
     cursor: pointer;
     padding: 12px 24px;
     border-bottom: 2px solid $secondary;
-    transition: background-color 0.125s ease;
+    transition:
+      background-color 0.125s ease,
+      border-bottom 0.4s ease;
     color: $text-secondary;
 
     &:hover {

@@ -10,7 +10,8 @@ import {
   getDoctorAppointments,
   getPatientAppointments,
 } from "../../services/appointmentService";
-import { getDoctors } from "../../services/doctorService";
+import { getDoctors, updateDoctor } from "../../services/doctorService";
+import { updatePatient } from "../../services/patientService";
 import ListItem from "../../components/listItem/listItem";
 import EmptyPage from "../../components/emptyPage/emptyPage";
 import Button from "../../components/button/Button";
@@ -18,50 +19,20 @@ import Modal from "../../components/modal/Modal";
 import Input from "../../components/input/Input";
 import Select from "../../components/select/select";
 import Remove from "../../assets/remove.svg";
+import Edit from "../../assets/edit.svg";
 import Confirm from "../../assets/confirm.svg";
 import "./profile.styles.scss";
-
-const formatDateBR = (dateTime) => {
-  const d = new Date(dateTime);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString();
-};
-
-const formatHourBR = (dateTime) => {
-  const d = new Date(dateTime);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-};
-
-const toDateTime = (date, hour) => new Date(`${date}T${hour}:00`);
-
-const isSunday = (dateStr) => {
-  const d = new Date(`${dateStr}T00:00:00`);
-  return d.getDay() === 0;
-};
-
-const withinBusinessHours = (hour) => {
-  const h = parseInt(hour.split(":")[0], 10);
-  return h >= 7 && h <= 18;
-};
-
-const businessHoursOptions = (dateStr) => {
-  const opts = [];
-  for (let h = 7; h <= 18; h++) {
-    const label = `${String(h).padStart(2, "0")}:00`;
-    if (dateStr) {
-      const start = toDateTime(dateStr, label);
-      const diff = start.getTime() - Date.now();
-      if (diff < 30 * 60 * 1000) continue;
-    }
-    opts.push({ label, value: label });
-  }
-  return opts;
-};
+import {
+  businessHoursOptions,
+  formatDateBR,
+  formatHourBR,
+  isSunday,
+  toDateTime,
+  withinBusinessHours,
+} from "../../utils/appointment";
+import { mapDoctor } from "../../utils/mappers";
+import { normalizeList } from "../../utils/normalizers";
+import ProfileEditModal from "../../components/profileEditModal/ProfileEditModal";
 
 const Profile = () => {
   const { token, logout } = useAuth();
@@ -71,20 +42,15 @@ const Profile = () => {
   const [warningMessage, setWarningMessage] = useState("");
   const [doctors, setDoctors] = useState([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedHour, setSelectedHour] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [cancelAppointment, setCancelAppointment] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
   const todayStr = new Date().toLocaleDateString("en-CA");
-
-  const normalizeList = (data) =>
-    Array.isArray(data)
-      ? data
-      : Array.isArray(data?.content)
-        ? data.content
-        : [];
 
   const mapAppointment = (appointment) => {
     const patient = appointment?.patient ?? appointment?.pacient;
@@ -105,14 +71,6 @@ const Profile = () => {
       hour: formatHourBR(time),
     };
   };
-
-  const mapDoctor = (doctor) => ({
-    id: doctor?.id ?? doctor?.doctorId ?? doctor?.userId,
-    name: doctor?.name ?? "",
-    crm: doctor?.crm ?? "",
-    specialty: doctor?.specialty ?? "",
-    disabled: doctor?.status === false,
-  });
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -206,8 +164,16 @@ const Profile = () => {
     setIsCreateModalOpen(true);
   };
 
+  const openEditModal = () => {
+    setIsEditModalOpen(true);
+  };
+
   const closeCreateModal = () => {
     setIsCreateModalOpen(false);
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
   };
 
   const openCancelModal = (appointment) => {
@@ -287,6 +253,64 @@ const Profile = () => {
       }
     } catch (error) {
       setWarningMessage(error?.message ?? "Erro ao concluir consulta.");
+    }
+  };
+
+  const handleEditSubmit = async (values) => {
+    if (!profile) return;
+    setIsSaving(true);
+    try {
+      if (profile.role === "PATIENT" && profile.patient?.id) {
+        const data = await updatePatient(token, profile.patient.id, {
+          ...values,
+          status:
+            typeof profile.patient?.status === "boolean"
+              ? profile.patient.status
+              : true,
+        });
+        const updatedPatient = data
+          ? { ...profile.patient, ...data }
+          : { ...profile.patient, ...values, address: values.address };
+        setProfile((prev) =>
+          prev
+            ? {
+                ...prev,
+                name: values.name,
+                patient: updatedPatient,
+              }
+            : prev,
+        );
+      }
+
+      if (profile.role === "DOCTOR" && profile.doctor?.id) {
+        const data = await updateDoctor(token, profile.doctor.id, {
+          ...values,
+          status:
+            typeof profile.doctor?.status === "boolean"
+              ? profile.doctor.status
+              : true,
+        });
+        const updatedDoctor = data
+          ? { ...profile.doctor, ...data }
+          : { ...profile.doctor, ...values, address: values.address };
+        setProfile((prev) =>
+          prev
+            ? {
+                ...prev,
+                name: values.name,
+                doctor: updatedDoctor,
+              }
+            : prev,
+        );
+      }
+
+      closeEditModal();
+    } catch (error) {
+      setWarningMessage(
+        error?.message ?? "Não foi possível atualizar o perfil.",
+      );
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -371,6 +395,15 @@ const Profile = () => {
                 </div>
               )}
             </>
+          )}
+
+          {profile?.role !== "ADMIN" && userInfo && (
+            <img
+              src={Edit}
+              alt="Editar perfil"
+              className="profile__card__edit"
+              onClick={openEditModal}
+            />
           )}
         </section>
       )}
@@ -496,6 +529,17 @@ const Profile = () => {
 
           <Button onClick={handleCreateAppointment}>Salvar</Button>
         </Modal>
+      )}
+
+      {isEditModalOpen && userInfo && (
+        <ProfileEditModal
+          isOpen={true}
+          title="Editar perfil"
+          initialValues={userInfo}
+          onClose={closeEditModal}
+          onSubmit={handleEditSubmit}
+          isSaving={isSaving}
+        />
       )}
 
       {cancelModalOpen && cancelAppointment && (

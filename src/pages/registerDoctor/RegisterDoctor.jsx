@@ -8,6 +8,13 @@ import Warning from "../../components/warning/Warning";
 import Modal from "../../components/modal/Modal";
 import { useNavigate } from "react-router-dom";
 import { getSpecialties, registerDoctor } from "../../services/authService";
+import {
+  isValidCrm,
+  isValidEmail,
+  isValidPhone,
+  isValidState,
+  isValidZip,
+} from "../../utils/validators";
 
 const specialtyLabels = {
   ORTHOPEDICS: "Ortopedia",
@@ -41,16 +48,6 @@ const RegisterDoctor = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [specialties, setSpecialties] = useState([]);
-
-  const onlyDigits = (value) => value.replace(/\D/g, "");
-  const isValidEmail = (value) => /\S+@\S+\.\S+/.test(value);
-  const isValidPhone = (value) => {
-    const digits = onlyDigits(value);
-    return digits.length === 10 || digits.length === 11;
-  };
-  const isValidZip = (value) => /^\d{5}-?\d{3}$/.test(value);
-  const isValidState = (value) => /^[A-Za-z]{2}$/.test(value);
-  const isValidCrm = (value) => /^CRM\/([A-Za-z]{2})\s\d{6}$/.test(value);
 
   useEffect(() => {
     const fetchSpecialties = async () => {

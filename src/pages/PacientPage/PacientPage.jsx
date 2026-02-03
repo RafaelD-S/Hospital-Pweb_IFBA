@@ -7,89 +7,36 @@ import "./pacientPage.styles.scss";
 import Remove from "../../assets/remove.svg";
 import Restore from "../../assets/restore.svg";
 import Edit from "../../assets/edit.svg";
-import Modal from "../../components/modal/Modal";
-import Input from "../../components/input/Input";
-import Button from "../../components/button/Button";
-import { isValidPhone, isValidState, isValidZip } from "../../utils/validators";
 import { getPatients, updatePatient } from "../../services/patientService";
 import EmptyPage from "../../components/emptyPage/emptyPage";
+import { mapPacient } from "../../utils/mappers";
+import { normalizeList } from "../../utils/normalizers";
+import ProfileEditModal from "../../components/profileEditModal/ProfileEditModal";
 
 const PacientPage = () => {
   const { token } = useAuth();
   const [pacients, setPacients] = useState([]);
   const [selectedPacient, setSelectedPacient] = useState(null);
-  const [formName, setFormName] = useState("");
-  const [formPhone, setFormPhone] = useState("");
-  const [formStreet, setFormStreet] = useState("");
-  const [formNumber, setFormNumber] = useState("");
-  const [formComplement, setFormComplement] = useState("");
-  const [formNeighborhood, setFormNeighborhood] = useState("");
-  const [formCity, setFormCity] = useState("");
-  const [formState, setFormState] = useState("");
-  const [formZipcode, setFormZipcode] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [warningMessage, setWarningMessage] = useState("");
 
-  const mapPacient = (pacient) => {
-    return {
-      id: pacient?.id,
-      name: pacient?.name ?? "",
-      email: pacient?.email ?? "",
-      cpf: pacient?.cpf ?? "",
-      phone: pacient?.phone ?? "",
-      disabled: pacient?.status === false,
-      address: pacient?.address ?? {},
-    };
-  };
-
   const openEditModal = (pacient) => {
     setSelectedPacient(pacient);
-    setFormName(pacient?.name ?? "");
-    setFormPhone(pacient?.phone ?? "");
-    setFormStreet(pacient?.address?.street ?? "");
-    setFormNumber(pacient?.address?.number ?? "");
-    setFormComplement(pacient?.address?.complement ?? "");
-    setFormNeighborhood(pacient?.address?.neighborhood ?? "");
-    setFormCity(pacient?.address?.city ?? "");
-    setFormState(pacient?.address?.state ?? "");
-    setFormZipcode(pacient?.address?.zipCode ?? "");
   };
 
   const closeEditModal = () => {
     setSelectedPacient(null);
   };
 
-  const handleSave = async () => {
+  const handleSave = async (values) => {
     if (!selectedPacient) return;
-    if (!formName.trim())
-      return setWarningMessage("Informe o nome do paciente.");
-    if (!formPhone.trim() || !isValidPhone(formPhone))
-      return setWarningMessage(
-        "Informe um telefone válido (ex.: (00) 00000-0000 ou 00000000000).",
-      );
-    if (!formStreet.trim()) return setWarningMessage("Informe o logradouro.");
-    if (!formNeighborhood.trim()) return setWarningMessage("Informe o bairro.");
-    if (!formCity.trim()) return setWarningMessage("Informe a cidade.");
-    if (!formState.trim() || !isValidState(formState))
-      return setWarningMessage("Informe a UF com 2 letras (ex.: BA, SP).");
-    if (!formZipcode.trim() || !isValidZip(formZipcode))
-      return setWarningMessage("Informe um CEP válido (00000-000).");
-
     setIsSaving(true);
     try {
       const data = await updatePatient(token, selectedPacient.id, {
-        name: formName.trim(),
-        phone: formPhone.trim(),
+        name: values.name,
+        phone: values.phone,
         status: selectedPacient.disabled ? false : true,
-        address: {
-          street: formStreet.trim(),
-          number: formNumber.trim(),
-          complement: formComplement.trim(),
-          neighborhood: formNeighborhood.trim(),
-          city: formCity.trim(),
-          state: formState.trim(),
-          zipCode: formZipcode.trim(),
-        },
+        address: values.address,
       });
       const updated = data ? mapPacient(data) : null;
       if (updated) {
@@ -149,11 +96,7 @@ const PacientPage = () => {
         const data = await getPatients(token, true);
         console.log(data);
 
-        const list = Array.isArray(data)
-          ? data.map(mapPacient)
-          : Array.isArray(data?.content)
-            ? data.content.map(mapPacient)
-            : [];
+        const list = normalizeList(data).map(mapPacient);
         setPacients(list);
       } catch (error) {
         setWarningMessage(
@@ -194,66 +137,14 @@ const PacientPage = () => {
             </ListItem>
 
             {selectedPacient?.id === item.id && (
-              <Modal isOpen={true} onClickOutside={closeEditModal}>
-                <Modal.Title>Editar {item.name}</Modal.Title>
-                <Input
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  label="Nome"
-                  placeholder="Digite o nome"
-                />
-                <Input
-                  value={formPhone}
-                  onChange={(e) => setFormPhone(e.target.value)}
-                  label="Telefone"
-                  placeholder="Digite o telefone"
-                />
-                <Input
-                  value={formStreet}
-                  onChange={(e) => setFormStreet(e.target.value)}
-                  label="Logradouro"
-                  placeholder="Digite o logradouro"
-                />
-                <Input
-                  value={formNumber}
-                  onChange={(e) => setFormNumber(e.target.value)}
-                  label="Número"
-                  placeholder="Digite o número"
-                />
-                <Input
-                  value={formComplement}
-                  onChange={(e) => setFormComplement(e.target.value)}
-                  label="Complemento"
-                  placeholder="Digite o complemento"
-                />
-                <Input
-                  value={formNeighborhood}
-                  onChange={(e) => setFormNeighborhood(e.target.value)}
-                  label="Bairro"
-                  placeholder="Digite o bairro"
-                />
-                <Input
-                  value={formCity}
-                  onChange={(e) => setFormCity(e.target.value)}
-                  label="Cidade"
-                  placeholder="Digite a cidade"
-                />
-                <Input
-                  value={formState}
-                  onChange={(e) => setFormState(e.target.value)}
-                  label="Estado"
-                  placeholder="Digite o estado"
-                />
-                <Input
-                  value={formZipcode}
-                  onChange={(e) => setFormZipcode(e.target.value)}
-                  label="CEP"
-                  placeholder="Digite o CEP"
-                />
-                <Button onClick={handleSave} disabled={isSaving}>
-                  Salvar
-                </Button>
-              </Modal>
+              <ProfileEditModal
+                isOpen={true}
+                title={`Editar ${item.name}`}
+                initialValues={item}
+                onClose={closeEditModal}
+                onSubmit={handleSave}
+                isSaving={isSaving}
+              />
             )}
           </Fragment>
         ))}

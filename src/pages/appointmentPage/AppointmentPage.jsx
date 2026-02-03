@@ -19,37 +19,16 @@ import {
 import ListItem from "../../components/listItem/listItem";
 import EmptyPage from "../../components/emptyPage/emptyPage";
 import "./appointmentPage.styles.scss";
-
-const toDateTime = (date, hour) => new Date(`${date}T${hour}:00`);
-
-const isSunday = (dateStr) => {
-  const d = new Date(`${dateStr}T00:00:00`);
-  return d.getDay() === 0;
-};
-
-const withinBusinessHours = (hour) => {
-  const h = parseInt(hour.split(":")[0], 10);
-  return h >= 7 && h <= 18;
-};
-
-const formatDateBR = (dateStr) => {
-  const d = new Date(`${dateStr}T00:00:00`);
-  return d.toLocaleDateString();
-};
-
-const businessHoursOptions = (dateStr) => {
-  const opts = [];
-  for (let h = 7; h <= 18; h++) {
-    const label = `${String(h).padStart(2, "0")}:00`;
-    if (dateStr) {
-      const start = toDateTime(dateStr, label);
-      const diff = start.getTime() - Date.now();
-      if (diff < 30 * 60 * 1000) continue;
-    }
-    opts.push({ label, value: label });
-  }
-  return opts;
-};
+import {
+  businessHoursOptions,
+  formatDateBR,
+  isSunday,
+  parseAppointmentTime,
+  toDateTime,
+  withinBusinessHours,
+} from "../../utils/appointment";
+import { mapDoctor, mapPacient } from "../../utils/mappers";
+import { normalizeList } from "../../utils/normalizers";
 
 const AppointmentPage = () => {
   const { token } = useAuth();
@@ -68,46 +47,6 @@ const AppointmentPage = () => {
   const [selectedDoctor, setSelectedDoctor] = useState("");
 
   const todayStr = new Date().toLocaleDateString("en-CA");
-
-  const parseAppointmentTime = (dateTime) => {
-    if (!dateTime) return { date: "", hour: "" };
-    const d = new Date(dateTime);
-    if (Number.isNaN(d.getTime())) return { date: "", hour: "" };
-    const date = d.toLocaleDateString("en-CA");
-    const hour = d.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-    return { date, hour };
-  };
-
-  const mapDoctor = (doctor) => {
-    const address = doctor?.address ?? {};
-    return {
-      id: doctor?.id ?? doctor?.doctorId ?? doctor?.userId,
-      name: doctor?.name ?? "",
-      specialty: doctor?.specialty ?? "",
-      email: doctor?.email ?? "",
-      phone: doctor?.phone ?? "",
-      crm: doctor?.crm ?? "",
-      address,
-      disabled: doctor?.status === false,
-    };
-  };
-
-  const mapPacient = (pacient) => {
-    const address = pacient?.address ?? {};
-    return {
-      id: pacient?.id ?? pacient?.patientId ?? pacient?.userId,
-      name: pacient?.name ?? "",
-      email: pacient?.email ?? "",
-      phone: pacient?.phone ?? "",
-      cpf: pacient?.cpf ?? "",
-      address,
-      disabled: pacient?.status === false,
-    };
-  };
 
   const mapAppointment = (appointment) => {
     const patient = appointment?.patient ?? appointment?.pacient;
@@ -133,13 +72,6 @@ const AppointmentPage = () => {
   };
 
   useEffect(() => {
-    const normalizeList = (data) =>
-      Array.isArray(data)
-        ? data
-        : Array.isArray(data?.content)
-          ? data.content
-          : [];
-
     const fetchAll = async () => {
       try {
         const [doctorData, pacientData, appointmentData] = await Promise.all([
@@ -308,9 +240,7 @@ const AppointmentPage = () => {
         );
       }
     } catch (error) {
-      setWarningMessage(
-        error?.message ?? "Erro ao concluir consulta.",
-      );
+      setWarningMessage(error?.message ?? "Erro ao concluir consulta.");
     }
   };
 
