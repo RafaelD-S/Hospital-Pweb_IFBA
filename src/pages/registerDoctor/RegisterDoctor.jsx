@@ -7,6 +7,7 @@ import Select from "../../components/select/select";
 import Warning from "../../components/warning/Warning";
 import Modal from "../../components/modal/Modal";
 import { useNavigate } from "react-router-dom";
+import { getSpecialties, registerDoctor } from "../../services/authService";
 
 const specialtyLabels = {
   ORTHOPEDICS: "Ortopedia",
@@ -54,10 +55,7 @@ const RegisterDoctor = () => {
   useEffect(() => {
     const fetchSpecialties = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
-        const response = await fetch(`${apiUrl}/auth/specialties`);
-        if (!response.ok) return;
-        const data = await response.json();
+        const data = await getSpecialties();
         if (Array.isArray(data)) setSpecialties(data);
       } catch {
         // noop
@@ -95,41 +93,23 @@ const RegisterDoctor = () => {
     setWarningMessage("");
     setIsSubmitting(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
-      const response = await fetch(`${apiUrl}/auth/register/medico`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      await registerDoctor({
+        email: email.trim(),
+        password,
+        name: name.trim(),
+        phone: phone.trim(),
+        crm: crm.trim(),
+        specialty,
+        address: {
+          street: logradouro.trim(),
+          number: numero.trim() || null,
+          complement: complemento.trim() || null,
+          neighborhood: bairro.trim(),
+          city: cidade.trim(),
+          state: estado.trim().toUpperCase(),
+          zipCode: cep.trim(),
         },
-        body: JSON.stringify({
-          email: email.trim(),
-          password,
-          name: name.trim(),
-          phone: phone.trim(),
-          crm: crm.trim(),
-          specialty,
-          address: {
-            street: logradouro.trim(),
-            number: numero.trim() || null,
-            complement: complemento.trim() || null,
-            neighborhood: bairro.trim(),
-            city: cidade.trim(),
-            state: estado.trim().toUpperCase(),
-            zipCode: cep.trim(),
-          },
-        }),
       });
-
-      if (!response.ok) {
-        let message = "Erro ao cadastrar. Verifique os dados.";
-        try {
-          const data = await response.json();
-          message = data?.message ?? message;
-        } catch {
-          // noop
-        }
-        throw new Error(message);
-      }
 
       setIsModalOpen(true);
     } catch (error) {

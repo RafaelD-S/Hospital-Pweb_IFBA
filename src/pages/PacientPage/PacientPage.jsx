@@ -11,6 +11,8 @@ import Modal from "../../components/modal/Modal";
 import Input from "../../components/input/Input";
 import Button from "../../components/button/Button";
 import { isValidPhone, isValidState, isValidZip } from "../../utils/validators";
+import { getPatients, updatePatient } from "../../services/patientService";
+import EmptyPage from "../../components/emptyPage/emptyPage";
 
 const PacientPage = () => {
   const { token } = useAuth();
@@ -91,41 +93,20 @@ const PacientPage = () => {
 
     setIsSaving(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
-      const response = await fetch(`${apiUrl}/patients/${selectedPacient.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const data = await updatePatient(token, selectedPacient.id, {
+        name: formName.trim(),
+        phone: formPhone.trim(),
+        status: selectedPacient.disabled ? false : true,
+        address: {
+          street: formStreet.trim(),
+          number: formNumber.trim(),
+          complement: formComplement.trim(),
+          neighborhood: formNeighborhood.trim(),
+          city: formCity.trim(),
+          state: formState.trim(),
+          zipCode: formZipcode.trim(),
         },
-        body: JSON.stringify({
-          name: formName.trim(),
-          phone: formPhone.trim(),
-          status: selectedPacient.disabled ? false : true,
-          address: {
-            street: formStreet.trim(),
-            number: formNumber.trim(),
-            complement: formComplement.trim(),
-            neighborhood: formNeighborhood.trim(),
-            city: formCity.trim(),
-            state: formState.trim(),
-            zipCode: formZipcode.trim(),
-          },
-        }),
       });
-
-      if (!response.ok) {
-        let message = "Não foi possível atualizar o paciente.";
-        try {
-          const data = await response.json();
-          message = data?.message ?? message;
-        } catch {
-          // noop
-        }
-        throw new Error(message);
-      }
-
-      const data = await response.json();
       const updated = data ? mapPacient(data) : null;
       if (updated) {
         setPacients((prev) =>
@@ -145,41 +126,20 @@ const PacientPage = () => {
   const handleToggleStatus = async (pacient) => {
     if (!pacient?.id) return;
     try {
-      const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
-      const response = await fetch(`${apiUrl}/patients/${pacient.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const data = await updatePatient(token, pacient.id, {
+        name: pacient.name,
+        phone: pacient.phone,
+        status: pacient.disabled ? true : false,
+        address: {
+          street: pacient.address?.street ?? "",
+          number: pacient.address?.number ?? "",
+          complement: pacient.address?.complement ?? "",
+          neighborhood: pacient.address?.neighborhood ?? "",
+          city: pacient.address?.city ?? "",
+          state: pacient.address?.state ?? "",
+          zipCode: pacient.address?.zipCode ?? "",
         },
-        body: JSON.stringify({
-          name: pacient.name,
-          phone: pacient.phone,
-          status: pacient.disabled ? true : false,
-          address: {
-            street: pacient.address?.street ?? "",
-            number: pacient.address?.number ?? "",
-            complement: pacient.address?.complement ?? "",
-            neighborhood: pacient.address?.neighborhood ?? "",
-            city: pacient.address?.city ?? "",
-            state: pacient.address?.state ?? "",
-            zipCode: pacient.address?.zipCode ?? "",
-          },
-        }),
       });
-
-      if (!response.ok) {
-        let message = "Não foi possível atualizar o status do paciente.";
-        try {
-          const data = await response.json();
-          message = data?.message ?? message;
-        } catch {
-          // noop
-        }
-        throw new Error(message);
-      }
-
-      const data = await response.json();
       const updated = data ? mapPacient(data) : null;
       if (updated) {
         setPacients((prev) =>
@@ -202,19 +162,7 @@ const PacientPage = () => {
   useEffect(() => {
     const fetchPacients = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
-        const response = await fetch(`${apiUrl}/patients/all`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Não foi possível carregar pacientes.");
-        }
-
-        const data = await response.json();
+        const data = await getPatients(token, true);
         console.log(data);
 
         const list = Array.isArray(data)
@@ -325,6 +273,13 @@ const PacientPage = () => {
           </Fragment>
         ))}
       </div>
+
+      {pacients.length === 0 && (
+        <EmptyPage
+          title="Nenhum paciente encontrado."
+          description="Não há pacientes cadastrados no momento. Atualize a página para verificar novamente."
+        />
+      )}
 
       {warningMessage && (
         <Warning

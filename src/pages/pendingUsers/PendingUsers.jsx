@@ -4,6 +4,7 @@ import Warning from "../../components/warning/Warning";
 import { useAuth } from "../../hooks/useAuth";
 import "./pendingUsers.styles.scss";
 import EmptyPage from "../../components/emptyPage/emptyPage";
+import { approveUser, getPendingUsers } from "../../services/adminService";
 
 const PendingUsers = () => {
   const { token, isAdmin } = useAuth();
@@ -22,19 +23,7 @@ const PendingUsers = () => {
     if (!token || !isAdmin) return;
     setIsLoading(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
-      const response = await fetch(`${apiUrl}/admin/pending-users`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Não foi possível carregar usuários pendentes.");
-      }
-
-      const data = await response.json();
+      const data = await getPendingUsers(token);
       const list = Array.isArray(data) ? data.map(mapUser) : [];
       setPendingUsers(list);
     } catch (error) {
@@ -52,24 +41,7 @@ const PendingUsers = () => {
 
   const handleApproval = async (userId, approved) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
-      const response = await fetch(`${apiUrl}/admin/approve-user`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ userId, approved }),
-      });
-
-      if (!response.ok) {
-        let message = "Não foi possível atualizar o usuário.";
-        try {
-          const data = await response.json();
-          message = data?.message ?? message;
-        } catch {}
-        throw new Error(message);
-      }
+      await approveUser(token, userId, approved);
 
       setPendingUsers((prev) => prev.filter((u) => u.id !== userId));
     } catch (error) {

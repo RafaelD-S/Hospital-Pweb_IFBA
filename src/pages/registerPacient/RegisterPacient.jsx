@@ -14,6 +14,7 @@ import {
   isValidZip,
   onlyDigits,
 } from "../../utils/validators";
+import { registerPatient } from "../../services/authService";
 
 const RegisterPacient = () => {
   const navigate = useNavigate();
@@ -64,46 +65,22 @@ const RegisterPacient = () => {
     setIsSubmitting(true);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
-      const response = await fetch(`${apiUrl}/auth/register/paciente`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      await registerPatient({
+        email: email.trim(),
+        password,
+        name: name.trim(),
+        phone: phone.trim(),
+        cpf: onlyDigits(cpf),
+        address: {
+          street: logradouro.trim(),
+          number: numero.trim() || null,
+          complement: complemento.trim() || null,
+          neighborhood: bairro.trim(),
+          city: cidade.trim(),
+          state: estado.trim().toUpperCase(),
+          zipCode: cep.trim(),
         },
-        body: JSON.stringify({
-          email: email.trim(),
-          password,
-          name: name.trim(),
-          phone: phone.trim(),
-          cpf: onlyDigits(cpf),
-          address: {
-            street: logradouro.trim(),
-            number: numero.trim() || null,
-            complement: complemento.trim() || null,
-            neighborhood: bairro.trim(),
-            city: cidade.trim(),
-            state: estado.trim().toUpperCase(),
-            zipCode: cep.trim(),
-          },
-        }),
       });
-
-      if (!response.ok) {
-        let message = "Erro ao cadastrar. Verifique os dados.";
-        try {
-          const data = await response.json();
-          if (typeof data === "string") {
-            message = data;
-          } else if (data?.message) {
-            message = data.message;
-          } else if (data && typeof data === "object") {
-            message = Object.values(data).join("\n");
-          }
-        } catch {
-          // noop
-        }
-        throw new Error(message);
-      }
 
       setIsModalOpen(true);
     } catch (error) {

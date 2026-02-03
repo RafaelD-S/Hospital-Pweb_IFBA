@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { login as loginRequest } from "../services/authService";
 
 const TOKEN_KEY = "medsystem.token";
 const USER_KEY = "medsystem.user";
@@ -80,27 +81,7 @@ export function useAuth() {
 
   const login = useCallback(
     async ({ email, password }) => {
-      const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
-      const response = await fetch(`${apiUrl}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        let message = "Nome ou senha inválidos";
-        try {
-          const data = await response.json();
-          message = data?.message ?? message;
-        } catch {
-          // noop
-        }
-        throw new Error(message);
-      }
-
-      const data = await response.json();
+      const data = await loginRequest(email, password);
       const newToken = data?.token;
       if (!newToken) throw new Error("Token não recebido");
 

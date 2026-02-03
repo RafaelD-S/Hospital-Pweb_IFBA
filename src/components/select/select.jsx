@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./select.styles.scss";
 
 const Select = ({
@@ -10,16 +10,38 @@ const Select = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [optionsState, setOptionsState] = useState(options);
+  const dropdownRef = useRef(null);
+  const selectRef = useRef(null);
 
   useEffect(() => {
     setOptionsState(options);
   }, [options]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (event) => {
+      if (!dropdownRef.current || !selectRef.current) return;
+      if (
+        !dropdownRef.current.contains(event.target) &&
+        !selectRef.current.contains(event.target)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
   const selectedItem = optionsState.find((opt) => opt.selected);
 
   const toggleOpen = () => {
     if (disabled) return;
-    setIsOpen((o) => !o);
+    setIsOpen(true);
   };
 
   const handleOptionClick = (optionValue) => {
@@ -35,7 +57,10 @@ const Select = ({
   };
 
   return (
-    <div className={"select" + (disabled ? " select--disabled" : "")}>
+    <div
+      className={"select" + (disabled ? " select--disabled" : "")}
+      ref={selectRef}
+    >
       <label className="select__label" htmlFor={`select-component-${label}`}>
         {label}
       </label>
@@ -51,7 +76,7 @@ const Select = ({
       </div>
 
       {isOpen && (
-        <div className="select__dropdown">
+        <div className="select__dropdown" ref={dropdownRef}>
           {optionsState.map((option) => {
             const optionClasses = ["select__dropdown__item"];
             if (option.selected)

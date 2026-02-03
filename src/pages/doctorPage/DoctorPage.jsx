@@ -11,6 +11,7 @@ import Remove from "../../assets/remove.svg";
 import Restore from "../../assets/restore.svg";
 import { isValidPhone, isValidState, isValidZip } from "../../utils/validators";
 import EmptyPage from "../../components/emptyPage/emptyPage";
+import { getDoctors, updateDoctor } from "../../services/doctorService";
 
 const DoctorPage = () => {
   const { token } = useAuth();
@@ -76,41 +77,20 @@ const DoctorPage = () => {
 
     setIsSaving(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
-      const response = await fetch(`${apiUrl}/doctors/${selectedDoctor.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const data = await updateDoctor(token, selectedDoctor.id, {
+        name: formName.trim(),
+        phone: formPhone.trim(),
+        status: selectedDoctor.disabled ? false : true,
+        address: {
+          street: formStreet.trim(),
+          number: formNumber.trim(),
+          complement: formComplement.trim(),
+          neighborhood: formNeighborhood.trim(),
+          city: formCity.trim(),
+          state: formState.trim(),
+          zipCode: formZipcode.trim(),
         },
-        body: JSON.stringify({
-          name: formName.trim(),
-          phone: formPhone.trim(),
-          status: selectedDoctor.disabled ? false : true,
-          address: {
-            street: formStreet.trim(),
-            number: formNumber.trim(),
-            complement: formComplement.trim(),
-            neighborhood: formNeighborhood.trim(),
-            city: formCity.trim(),
-            state: formState.trim(),
-            zipCode: formZipcode.trim(),
-          },
-        }),
       });
-
-      if (!response.ok) {
-        let message = "Não foi possível atualizar o médico.";
-        try {
-          const data = await response.json();
-          message = data?.message ?? message;
-        } catch {
-          // noop
-        }
-        throw new Error(message);
-      }
-
-      const data = await response.json();
       const updated = data ? mapDoctor(data) : null;
       if (updated) {
         setDoctors((prev) =>
@@ -130,19 +110,7 @@ const DoctorPage = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
-        const response = await fetch(`${apiUrl}/doctors/all`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Não foi possível carregar médicos.");
-        }
-
-        const data = await response.json();
+        const data = await getDoctors(token, true);
         const list = Array.isArray(data)
           ? data.map(mapDoctor)
           : Array.isArray(data?.content)
@@ -162,41 +130,20 @@ const DoctorPage = () => {
   const handleToggleStatus = async (doctor) => {
     if (!doctor?.id) return;
     try {
-      const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
-      const response = await fetch(`${apiUrl}/doctors/${doctor.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const data = await updateDoctor(token, doctor.id, {
+        name: doctor.name,
+        phone: doctor.phone,
+        status: doctor.disabled ? true : false,
+        address: {
+          street: doctor.address?.street ?? "",
+          number: doctor.address?.number ?? "",
+          complement: doctor.address?.complement ?? "",
+          neighborhood: doctor.address?.neighborhood ?? "",
+          city: doctor.address?.city ?? "",
+          state: doctor.address?.state ?? "",
+          zipCode: doctor.address?.zipCode ?? "",
         },
-        body: JSON.stringify({
-          name: doctor.name,
-          phone: doctor.phone,
-          status: doctor.disabled ? true : false,
-          address: {
-            street: doctor.address?.street ?? "",
-            number: doctor.address?.number ?? "",
-            complement: doctor.address?.complement ?? "",
-            neighborhood: doctor.address?.neighborhood ?? "",
-            city: doctor.address?.city ?? "",
-            state: doctor.address?.state ?? "",
-            zipCode: doctor.address?.zipCode ?? "",
-          },
-        }),
       });
-
-      if (!response.ok) {
-        let message = "Não foi possível atualizar o status do médico.";
-        try {
-          const data = await response.json();
-          message = data?.message ?? message;
-        } catch {
-          // noop
-        }
-        throw new Error(message);
-      }
-
-      const data = await response.json();
       const updated = data ? mapDoctor(data) : null;
       if (updated) {
         setDoctors((prev) =>

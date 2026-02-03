@@ -1,0 +1,38 @@
+@use "../../styles/variables.scss" as *;
+
+.appointment-page {
+  display: grid;
+  gap: 16px;
+
+  &__cancelled {
+    color: $invalid;
+    font-weight: 600;
+  }
+
+  &__completed {
+    color: $valid;
+    font-weight: 600;
+  }
+
+  &__scheduled {
+    color: $accent;
+    font-weight: 600;
+  }
+
+  &__header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+
+  &__title {
+    font-size: 20px;
+    font-weight: 600;
+    color: $text-primary;
+  }
+
+  &__content {
+    display: grid;
+    gap: 12px;
+  }
+}
