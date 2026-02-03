@@ -1,73 +1,56 @@
-# React + TypeScript + Vite
+# Hospital PWeb (Frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicação web para gestão de um sistema hospitalar (pacientes, médicos, consultas e administração). Este repositório contém o frontend em React + Vite.
 
-Currently, two official plugins are available:
+Backend: https://github.com/luad3cristal/medSystemAPI
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Stack
 
-## React Compiler
+- React + Vite
+- React Router
+- SCSS
+- Fetch API
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Funcionalidades
 
-## Expanding the ESLint configuration
+- Autenticação (login e registro de paciente/médico)
+- Listagem e edição de médicos e pacientes
+- Agendamento, conclusão e cancelamento de consultas
+- Perfil do usuário (paciente/médico) com edição
+- Aprovação de usuários pendentes (admin)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Configuração
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Crie um arquivo .env na raiz com a URL do backend:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+VITE_API_URL=http://localhost:8080
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Instalação
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+1. Instale as dependências:
+   - npm install
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+2. Rode o projeto em desenvolvimento:
+   - npm run dev
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+3. Build de produção:
+   - npm run build
+
+## Scripts úteis
+
+- npm run dev: inicia o servidor de desenvolvimento
+- npm run build: gera a build de produção
+- npm run preview: serve a build localmente
+
+## Estrutura de pastas (resumo)
+
+- src/components: componentes reutilizáveis (botões, inputs, modais, etc.)
+- src/pages: páginas principais do app
+- src/services: comunicação com API
+- src/utils: utilitários (validadores, mapeamentos, etc.)
+- src/styles: estilos globais e variáveis
+
+## Observações
+
+- Para funcionar corretamente, o backend precisa estar rodando e a variável VITE_API_URL apontando para ele.
+- As rotas e permissões variam conforme o papel do usuário (ADMIN, DOCTOR, PATIENT).
