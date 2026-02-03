@@ -19,3 +19,5 @@ export const registerDoctor = (payload) =>
   });
 
 export const getSpecialties = () => apiRequest("/auth/specialties");
+
+export const getMe = (token) => apiRequest("/auth/me", { token });

@@ -1,0 +1,85 @@
+@use "../../styles/variables.scss" as *;
+
+.profile {
+  display: grid;
+  gap: 20px;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  &__title {
+    color: $text-primary;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  &__subtitle {
+    color: $text-primary;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  &__card {
+    background-color: $background-secondary;
+    border-radius: 8px;
+    padding: 16px;
+    display: grid;
+    gap: 8px;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 8px;
+    color: $text-secondary;
+
+    strong {
+      color: $text-primary;
+    }
+  }
+
+  &__appointments {
+    display: grid;
+    gap: 12px;
+
+    &__header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      padding: 8px;
+    }
+  }
+
+  &__list {
+    display: grid;
+    gap: 12px;
+  }
+
+  &__status {
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+
+    &--scheduled {
+      color: $accent;
+    }
+
+    &--completed {
+      color: $valid;
+    }
+
+    &--cancelled {
+      color: $invalid;
+    }
+  }
+}

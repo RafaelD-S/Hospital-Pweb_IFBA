@@ -3,7 +3,6 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 const parseErrorMessage = async (response) => {
   const contentType = response.headers.get("content-type") ?? "";
 
-  // Tenta JSON
   if (contentType.includes("application/json")) {
     try {
       const data = await response.clone().json();
@@ -11,18 +10,12 @@ const parseErrorMessage = async (response) => {
       if (data?.message) return data.message;
       if (data && typeof data === "object")
         return Object.values(data).join("\n");
-    } catch {
-      // fallback para texto
-    }
+    } catch {}
   }
-
-  // Tenta texto puro
   try {
     const text = await response.clone().text();
     if (text) return text;
-  } catch {
-    // noop
-  }
+  } catch {}
 
   return `Erro na requisição (${response.status}).`;
 };

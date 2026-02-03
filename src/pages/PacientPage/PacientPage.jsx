@@ -30,22 +30,6 @@ const PacientPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [warningMessage, setWarningMessage] = useState("");
 
-  // tipagem
-  // id: string
-  // name: string
-  // email: string
-  // cpf: string
-  // phone: string
-  // disabled: boolean
-  // address: {
-  //   city: string
-  //   complement: string
-  //   neighborhood: string
-  //   number: string
-  //   state: string
-  //   street: string
-  //   zipcode: string
-  // }
   const mapPacient = (pacient) => {
     return {
       id: pacient?.id,
@@ -192,6 +176,8 @@ const PacientPage = () => {
               description={item.email}
               disabled={item.disabled}
             >
+              <img src={Edit} alt="Edit" onClick={() => openEditModal(item)} />
+
               {item.disabled ? (
                 <img
                   src={Restore}
@@ -205,7 +191,6 @@ const PacientPage = () => {
                   onClick={() => handleToggleStatus(item)}
                 />
               )}
-              <img src={Edit} alt="Edit" onClick={() => openEditModal(item)} />
             </ListItem>
 
             {selectedPacient?.id === item.id && (

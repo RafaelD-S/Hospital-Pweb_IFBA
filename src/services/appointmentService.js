@@ -22,3 +22,23 @@ export const completeAppointment = (token, id) =>
     method: "PATCH",
     token,
   });
+
+export const getPatientAppointments = (token, patientId, status) => {
+  const params = new URLSearchParams();
+  if (status) params.set("status", status);
+  const query = params.toString();
+  const path = `/appointments/patient/${patientId}/my-consultations${
+    query ? `?${query}` : ""
+  }`;
+  return apiRequest(path, { token });
+};
+
+export const getDoctorAppointments = (token, doctorId, status) => {
+  const params = new URLSearchParams();
+  if (status) params.set("status", status);
+  const query = params.toString();
+  const path = `/appointments/doctor/${doctorId}/my-consultations${
+    query ? `?${query}` : ""
+  }`;
+  return apiRequest(path, { token });
+};

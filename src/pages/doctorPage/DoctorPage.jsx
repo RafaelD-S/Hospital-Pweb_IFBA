@@ -14,7 +14,7 @@ import EmptyPage from "../../components/emptyPage/emptyPage";
 import { getDoctors, updateDoctor } from "../../services/doctorService";
 
 const DoctorPage = () => {
-  const { token } = useAuth();
+  const { token, isAdmin } = useAuth();
   const [doctors, setDoctors] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [formName, setFormName] = useState("");
@@ -174,20 +174,28 @@ const DoctorPage = () => {
               description={`${item.specialty ?? ""} • ${item.email}`}
               disabled={item.disabled}
             >
-              {item.disabled ? (
-                <img
-                  src={Restore}
-                  alt="Restore"
-                  onClick={() => handleToggleStatus(item)}
-                />
-              ) : (
-                <img
-                  src={Remove}
-                  alt="Remove"
-                  onClick={() => handleToggleStatus(item)}
-                />
+              {isAdmin && (
+                <>
+                  <img
+                    src={Edit}
+                    alt="Edit"
+                    onClick={() => openEditModal(item)}
+                  />
+                  {item.disabled ? (
+                    <img
+                      src={Restore}
+                      alt="Restore"
+                      onClick={() => handleToggleStatus(item)}
+                    />
+                  ) : (
+                    <img
+                      src={Remove}
+                      alt="Remove"
+                      onClick={() => handleToggleStatus(item)}
+                    />
+                  )}
+                </>
               )}
-              <img src={Edit} alt="Edit" onClick={() => openEditModal(item)} />
             </ListItem>
 
             {selectedDoctor?.id === item.id && (
@@ -262,6 +270,7 @@ const DoctorPage = () => {
           description="Não há médicos cadastrados no momento."
         />
       )}
+
       {warningMessage && (
         <Warning
           message={warningMessage}
