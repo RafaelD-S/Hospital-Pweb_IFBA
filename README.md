@@ -1,6 +1,6 @@
 # Hospital PWeb (Frontend)
 
-Aplicação web para gestão de um sistema hospitalar (pacientes, médicos, consultas e administração). Este repositório contém o frontend em React + Vite.
+Aplicação web para gestão de um sistema hospitalar com perfis de paciente, médico e administrador. Este repositório contém o frontend em React + Vite.
 
 Backend: https://github.com/luad3cristal/medSystemAPI
 
@@ -13,11 +13,55 @@ Backend: https://github.com/luad3cristal/medSystemAPI
 
 ## Funcionalidades
 
-- Autenticação (login e registro de paciente/médico)
-- Listagem e edição de médicos e pacientes
-- Agendamento, conclusão e cancelamento de consultas
-- Perfil do usuário (paciente/médico) com edição
-- Aprovação de usuários pendentes (admin)
+### Gerais
+
+- Autenticação (login) e registro de paciente/médico
+- Aprovação obrigatória de novos cadastros por um administrador antes do primeiro login
+- Rotas protegidas por autenticação e papel (ADMIN, DOCTOR, PATIENT)
+- Perfil do usuário com dados pessoais, endereço e status
+
+### Paciente
+
+- Cria suas próprias consultas
+- Visualiza suas consultas e status
+- Cancela consultas com motivo e regra de antecedência
+- Edita seus dados pessoais e endereço
+
+### Médico
+
+- Visualiza suas consultas
+- Conclui consultas agendadas
+- Cancela consultas com motivo e regra de antecedência
+- Edita seus dados pessoais e endereço
+
+### Admin
+
+- Acesso a todos os dados do sistema
+- Lista pacientes e médicos
+- Ativa/inativa perfis de pacientes e médicos
+- Aprova ou recusa novos cadastros (usuários pendentes)
+- Gerencia consultas (criar, concluir e cancelar)
+
+## Regras de negócio para consultas
+
+- Atendimentos de segunda a sábado
+- Horários permitidos entre 07:00 e 18:00
+- Agendamento com pelo menos 30 minutos de antecedência
+- Paciente não pode ter duas consultas no mesmo dia
+- Médico não pode ter duas consultas no mesmo horário
+- Cancelamento apenas com 24h de antecedência e motivo informado
+- Médico pode ser opcional no agendamento (atribuição automática quando disponível)
+
+## Rotas principais
+
+- /login
+- /register/pacient
+- /register/doctor
+- /medicos (listagem de médicos; ações administrativas quando ADMIN)
+- /pacientes (ADMIN)
+- /consultas (ADMIN)
+- /pendentes (ADMIN)
+- /profile
 
 ## Configuração
 
@@ -53,4 +97,4 @@ VITE_API_URL=http://localhost:8080
 ## Observações
 
 - Para funcionar corretamente, o backend precisa estar rodando e a variável VITE_API_URL apontando para ele.
-- As rotas e permissões variam conforme o papel do usuário (ADMIN, DOCTOR, PATIENT).
+- As permissões variam conforme o papel do usuário (ADMIN, DOCTOR, PATIENT).
